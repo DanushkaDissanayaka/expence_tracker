@@ -62,27 +62,29 @@ class _AddExpenseState extends State<AddExpense> {
           body: BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
             builder: (context, state) {
               if (state is GetCategoriesSuccess) {
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Add Expenses',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w400,
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Add Expenses',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildExpenseField(context),
-                      const SizedBox(height: 16),
-                      _buildCategoryField(context, state),
-                      const SizedBox(height: 16),
-                      _buildDateField(context),
-                      const SizedBox(height: 32),
-                      _buildSaveButton(context),
-                    ],
+                        const SizedBox(height: 16),
+                        _buildExpenseField(context),
+                        const SizedBox(height: 16),
+                        _buildCategoryField(context, state),
+                        const SizedBox(height: 16),
+                        _buildDateField(context),
+                        const SizedBox(height: 32),
+                        _buildSaveButton(context),
+                      ],
+                    ),
                   ),
                 );
               } else {
