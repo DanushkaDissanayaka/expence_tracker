@@ -6,3 +6,10 @@ sealed class GetCategoriesEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
+class GetCategories extends GetCategoriesEvent {
+  const GetCategories();
+
+  @override
+  List<Object> get props => [];
+}

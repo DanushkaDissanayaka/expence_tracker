@@ -27,6 +27,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
     'travel.png',
   ];
   bool isExpanded = false;
+  Category newCategory = Category.empty;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
       child: BlocListener<CreateCategoryBloc, CreateCategoryState>(
         listener: (context, state) {
           if (state is CreateCategorySuccess) {
-            Navigator.pop(context);
+            Navigator.pop(context, newCategory);
           } else if (state is CreateCategoryLoading) {
             setState(() {
               isLoading = true;
@@ -152,13 +153,15 @@ class _CategoryCreateState extends State<CategoryCreate> {
                       ? Center(child: CircularProgressIndicator())
                       : TextButton(
                           onPressed: () {
-                            Category newCategory = Category.empty;
-                            newCategory.categoryId = const Uuid().v1();
-                            newCategory.name = nameController.text;
-                            newCategory.icon = selectedIcon.isNotEmpty
-                                ? selectedIcon
-                                : 'home.png';
-                            newCategory.color = selectedColor.toString();
+                            setState(() {
+                              newCategory.categoryId = const Uuid().v1();
+                              newCategory.name = nameController.text;
+                              newCategory.icon = selectedIcon.isNotEmpty
+                                  ? selectedIcon
+                                  : 'home.png';
+                              newCategory.color = selectedColor.value;
+                            });
+
                             context.read<CreateCategoryBloc>().add(
                               CreateCategory(newCategory),
                             );
