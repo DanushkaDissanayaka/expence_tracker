@@ -1,11 +1,24 @@
 import 'dart:math';
-
-import 'package:expense_tracker/data/data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
+import 'package:expense_tracker/data/data.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch expenses when screen loads
+    context.read<GetExpensesBloc>().add(GetExpensesRequested());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,80 +245,99 @@ class MainScreen extends StatelessWidget {
             ),
             SizedBox(height: 40),
             Expanded(
-              child: ListView.builder(
-                itemCount: transactionData.length,
-                itemBuilder: (context, int i) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
+              child: BlocBuilder<GetExpensesBloc, GetExpensesState>(
+                builder: (context, state) {
+                  if (state is GetExpensesLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is GetExpensesSuccess) {
+                    final expenses = state.expenses;
+                    if (expenses.isEmpty) {
+                      return const Center(child: Text('No expenses found.'));
+                    } 
+                    return ListView.builder(
+                      itemCount: expenses.length,
+                    itemBuilder: (context, int i) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Stack(
-                                  alignment: Alignment.center,
+                                Row(
                                   children: [
-                                    Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: transactionData[i]['color'],
-                                        shape: BoxShape.circle,
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Container(
+                                          width: 50,
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                            color: Color(expenses[i].category.color),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        Image.asset(
+                                          'assets/${expenses[i].category.icon}',
+                                          scale: 2,
+                                          color: Colors.white ,
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(width: 12.0),
+                                    Text(
+                                      expenses[i].category.name,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    transactionData[i]['icon'],
                                   ],
                                 ),
-                                SizedBox(width: 12.0),
-                                Text(
-                                  transactionData[i]['name'],
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      transactionData[i]['totalAmount'],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    Text(
+                                      transactionData[i]['date'],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.outline,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  transactionData[i]['totalAmount'],
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                Text(
-                                  transactionData[i]['date'],
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outline,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
+                  } else if (state is GetExpensesFailure) {
+                    return const Center(child: Text('Failed to load expenses.'));
+                  }
+                  return const SizedBox();
                 },
               ),
             ),

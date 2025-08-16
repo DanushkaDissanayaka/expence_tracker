@@ -2,8 +2,11 @@ import 'package:expense_tracker/screens/home/views/main_screen.dart';
 import 'package:expense_tracker/screens/stats/stat_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/screens/home/widgets/home_bottom_nav_bar.dart';
 import 'package:expense_tracker/screens/home/widgets/home_fab.dart';
+import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
+import 'package:expenses_repository/expense_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,20 +23,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: HomeBottomNavBar(
-        currentIndex: _index,
-        onTap: (value) {
-          setState(() {
-            _index = value;
-          });
-        },
-        selectedItemColor: _selectedItemColor,
-        unselectedItemColor: _unselectedItemColor,
+    return BlocProvider<GetExpensesBloc>(
+      create: (context) => GetExpensesBloc(FirebaseExpenseRepo()),
+      child: Scaffold(
+        bottomNavigationBar: HomeBottomNavBar(
+          currentIndex: _index,
+          onTap: (value) {
+            setState(() {
+              _index = value;
+            });
+          },
+          selectedItemColor: _selectedItemColor,
+          unselectedItemColor: _unselectedItemColor,
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: const HomeFAB(),
+        body: _widgetList[_index],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: const HomeFAB(),
-      body: _widgetList[_index],
     );
   }
 }

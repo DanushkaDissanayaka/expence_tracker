@@ -7,6 +7,7 @@ import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_exp
 import 'package:expense_tracker/add_expenses/blocs/get_categoriesbloc/get_categories_bloc.dart';
 import 'package:expense_tracker/add_expenses/views/add_expense.dart';
 import 'package:expenses_repository/expense_repository.dart';
+import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
 
 class HomeFAB extends StatelessWidget {
   const HomeFAB({super.key});
@@ -14,8 +15,8 @@ class HomeFAB extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
+      onPressed: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute<void>(
             builder: (BuildContext context) => MultiBlocProvider(
@@ -34,6 +35,8 @@ class HomeFAB extends StatelessWidget {
             ),
           ),
         );
+        // Refresh expenses after returning from add expense screen
+        context.read<GetExpensesBloc>().add(GetExpensesRequested());
       },
       shape: const CircleBorder(),
       child: Container(
