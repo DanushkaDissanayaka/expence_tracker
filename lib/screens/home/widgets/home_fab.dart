@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +8,6 @@ import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_exp
 import 'package:expense_tracker/add_expenses/blocs/get_categoriesbloc/get_categories_bloc.dart';
 import 'package:expense_tracker/add_expenses/views/add_expense.dart';
 import 'package:expenses_repository/expense_repository.dart';
-import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
 
 class HomeFAB extends StatelessWidget {
   const HomeFAB({super.key});
@@ -31,12 +31,12 @@ class HomeFAB extends StatelessWidget {
                   create: (context) => CreateExpenseBloc(FirebaseExpenseRepo()),
                 ),
               ],
-              child: const AddExpense(),
+              child: AddExpense(),
             ),
           ),
         );
         // Refresh expenses after returning from add expense screen
-        context.read<GetExpensesBloc>().add(GetExpensesRequested());
+        context.read<GetTotalExpensesBloc>().add(GetTotalExpenses());
       },
       shape: const CircleBorder(),
       child: Container(

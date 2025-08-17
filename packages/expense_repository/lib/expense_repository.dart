@@ -1,4 +1,4 @@
-library expense_repository;
+library;
 
 export 'src/models/category.dart';
 export 'src/models/mode.dart';

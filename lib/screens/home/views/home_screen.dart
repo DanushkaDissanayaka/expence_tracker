@@ -1,11 +1,10 @@
+import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:expense_tracker/screens/home/views/main_screen.dart';
 import 'package:expense_tracker/screens/stats/stat_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/screens/home/widgets/home_bottom_nav_bar.dart';
 import 'package:expense_tracker/screens/home/widgets/home_fab.dart';
-import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
 import 'package:expenses_repository/expense_repository.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,8 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<GetExpensesBloc>(
-      create: (context) => GetExpensesBloc(FirebaseExpenseRepo()),
+    return BlocProvider<GetTotalExpensesBloc>(
+      create: (context) => GetTotalExpensesBloc(FirebaseExpenseRepo()),
       child: Scaffold(
         bottomNavigationBar: HomeBottomNavBar(
           currentIndex: _index,

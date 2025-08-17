@@ -159,7 +159,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                               newCategory.icon = selectedIcon.isNotEmpty
                                   ? selectedIcon
                                   : 'home.png';
-                              newCategory.color = selectedColor.value;
+                              newCategory.color = selectedColor.toARGB32();
                             });
 
                             context.read<CreateCategoryBloc>().add(

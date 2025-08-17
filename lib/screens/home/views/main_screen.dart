@@ -1,9 +1,9 @@
 import 'dart:math';
+import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
-import 'package:expense_tracker/data/data.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     // Fetch expenses when screen loads
-    context.read<GetExpensesBloc>().add(GetExpensesRequested());
+    context.read<GetTotalExpensesBloc>().add(GetTotalExpenses());
   }
 
   @override
@@ -245,11 +245,11 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(height: 40),
             Expanded(
-              child: BlocBuilder<GetExpensesBloc, GetExpensesState>(
+              child: BlocBuilder<GetTotalExpensesBloc, GetTotalExpensesState>(
                 builder: (context, state) {
-                  if (state is GetExpensesLoading) {
+                  if (state is GetTotalExpensesLoading) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (state is GetExpensesSuccess) {
+                  } else if (state is GetTotalExpensesSuccess) {
                     final expenses = state.expenses;
                     if (expenses.isEmpty) {
                       return const Center(child: Text('No expenses found.'));
@@ -306,7 +306,7 @@ class _MainScreenState extends State<MainScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      transactionData[i]['totalAmount'],
+                                      expenses[i].totalAmount.toString(),
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Theme.of(
@@ -316,7 +316,7 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                     Text(
-                                      transactionData[i]['date'],
+                                      expenses[i].lastTransactionDate.toLocal().toString().split(' ')[0],
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Theme.of(
