@@ -3,7 +3,7 @@ import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_to
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:expense_tracker/screens/budget_plan_screen.dart';
+import 'package:expense_tracker/screens/budget_plan/budget_plan_screen.dart';
 import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
 
 class MainScreen extends StatefulWidget {
