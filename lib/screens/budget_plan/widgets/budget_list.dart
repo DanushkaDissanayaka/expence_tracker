@@ -38,134 +38,136 @@ class BudgetList extends StatelessWidget {
         child: Center(child: Text('No budgets added.', style: TextStyle(color: Colors.grey[600], fontSize: 16))),
       );
     }
-    return Column(
-      children: mainCategories.keys.map((mainCat) {
-        final subBudgets = budgetList.where((b) => b['mainCategory'] == mainCat).toList();
-        if (subBudgets.isEmpty) return SizedBox.shrink();
-        final total = subBudgets.fold<double>(0, (sum, item) => sum + double.tryParse(item['budget'] ?? '0')!);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(mainCat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+    return SingleChildScrollView(
+      child: Column(
+        children: mainCategories.keys.map((mainCat) {
+          final subBudgets = budgetList.where((b) => b['mainCategory'] == mainCat).toList();
+          if (subBudgets.isEmpty) return SizedBox.shrink();
+          final total = subBudgets.fold<double>(0, (sum, item) => sum + double.tryParse(item['budget'] ?? '0')!);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(mainCat, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('Total: ${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.blue)),
                     ),
-                    child: Text('Total: ${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.blue)),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            ...subBudgets.asMap().entries.map((entry) {
-              final i = budgetList.indexOf(entry.value);
-              final item = entry.value;
-              final isEditing = editingIndex == i;
-              return Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: isEditing
+              ...subBudgets.asMap().entries.map((entry) {
+                final i = budgetList.indexOf(entry.value);
+                final item = entry.value;
+                final isEditing = editingIndex == i;
+                return Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: isEditing
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: DropdownButtonFormField<String>(
+                                        decoration: InputDecoration(
+                                          labelText: 'Person',
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                      value: editingPerson.isEmpty ? null : editingPerson,
+                      items: personOptions
+                        .map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p),
+                          ))
+                        .toList(),
+                      onChanged: onEditingPersonChanged,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    SizedBox(
+                                      width: 80,
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          labelText: 'Budget',
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                        onChanged: onEditingBudgetChanged,
+                                        initialValue: editingBudget,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item['subCategory'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 2),
+                                    Text('Person: ${item['person']}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                  ],
+                                ),
+                        ),
+                        isEditing
                             ? Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Expanded(
-                                    child: DropdownButtonFormField<String>(
-                                      decoration: InputDecoration(
-                                        labelText: 'Person',
-                                        filled: true,
-                                        fillColor: Colors.grey[50],
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                    value: editingPerson.isEmpty ? null : editingPerson,
-                    items: personOptions
-                      .map((p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p),
-                        ))
-                      .toList(),
-                    onChanged: onEditingPersonChanged,
-                                    ),
+                                  IconButton(
+                                    icon: const Icon(Icons.check_circle, color: Colors.green),
+                                    onPressed: () => onEditSave(i, editingPerson, editingBudget),
                                   ),
-                                  const SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 80,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        labelText: 'Budget',
-                                        filled: true,
-                                        fillColor: Colors.grey[50],
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      onChanged: onEditingBudgetChanged,
-                                      initialValue: editingBudget,
-                                    ),
+                                  IconButton(
+                                    icon: const Icon(Icons.cancel, color: Colors.red),
+                                    onPressed: onEditCancel,
                                   ),
                                 ],
                               )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(item['subCategory'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 2),
-                                  Text('Person: ${item['person']}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blueAccent.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(item['budget'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.orange),
+                                    onPressed: () => onEditStart(i),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => onDelete(i),
+                                  ),
                                 ],
                               ),
-                      ),
-                      isEditing
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.check_circle, color: Colors.green),
-                                  onPressed: () => onEditSave(i, editingPerson, editingBudget),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.cancel, color: Colors.red),
-                                  onPressed: onEditCancel,
-                                ),
-                              ],
-                            )
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blueAccent.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(item['budget'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.orange),
-                                  onPressed: () => onEditStart(i),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => onDelete(i),
-                                ),
-                              ],
-                            ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }),
-          ],
-        );
-      }).toList(),
+                );
+              }),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 }
