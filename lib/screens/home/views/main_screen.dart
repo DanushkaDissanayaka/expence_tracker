@@ -3,6 +3,7 @@ import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_to
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:expense_tracker/screens/budget_plan_screen.dart';
 import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
 
 class MainScreen extends StatefulWidget {
@@ -73,9 +74,24 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ],
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(CupertinoIcons.settings),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const BudgetPlanScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.account_balance_wallet), // Budget icon
+                      tooltip: 'Budget Plan',
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(CupertinoIcons.settings),
+                    ),
+                  ],
                 ),
               ],
             ),

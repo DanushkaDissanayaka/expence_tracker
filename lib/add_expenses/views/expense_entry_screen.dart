@@ -3,6 +3,8 @@ import 'form_row.dart';
 import 'segmented.dart';
 import 'account_panel.dart';
 import 'category_panel.dart';
+import 'income_category_panel.dart';
+import 'transfer_category_panel.dart';
 import 'number_pad.dart';
 
 
@@ -229,14 +231,32 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                         }),
                         onDone: () => _setFocus(FocusField.none),
                       ),
-                    FocusField.category => CategoryPanel(
-                        key: const ValueKey('cat'),
-                        onClose: () => _setFocus(FocusField.none),
-                        onPick: (v) => setState(() {
-                          category = v;
-                          _setFocus(FocusField.none);
-                        }),
-                      ),
+                    FocusField.category => selectedTab == 0
+                        ? IncomeCategoryPanel(
+                            key: const ValueKey('income_cat'),
+                            onClose: () => _setFocus(FocusField.none),
+                            onPick: (v) => setState(() {
+                              category = v;
+                              _setFocus(FocusField.none);
+                            }),
+                          )
+                        : selectedTab == 2
+                            ? TransferCategoryPanel(
+                                key: const ValueKey('transfer_cat'),
+                                onClose: () => _setFocus(FocusField.none),
+                                onPick: (v) => setState(() {
+                                  category = v;
+                                  _setFocus(FocusField.none);
+                                }),
+                              )
+                            : CategoryPanel(
+                                key: const ValueKey('cat'),
+                                onClose: () => _setFocus(FocusField.none),
+                                onPick: (v) => setState(() {
+                                  category = v;
+                                  _setFocus(FocusField.none);
+                                }),
+                              ),
                     FocusField.account => AccountPanel(
                         key: const ValueKey('acc'),
                         onClose: () => _setFocus(FocusField.none),
