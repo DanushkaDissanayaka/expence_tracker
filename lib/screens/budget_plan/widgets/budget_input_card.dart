@@ -1,9 +1,10 @@
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
 class BudgetInputCard extends StatelessWidget {
   final String formattedMonth;
   final String personInput;
-  final List<String> personOptions;
+  final List<Person> personOptions;
   final Function(String?) onPersonChanged;
   final String selectedMainCategory;
   final String selectedSubCategory;
@@ -12,6 +13,9 @@ class BudgetInputCard extends StatelessWidget {
   final String budgetInput;
   final TextEditingController budgetController;
   final Function(String) onBudgetChanged;
+  final String selectedType;
+  final Function(String?) onTypeChanged;
+  final List<BudgetType> budgetTypeOptions;
   final VoidCallback onAdd;
   final bool canAdd;
 
@@ -25,9 +29,12 @@ class BudgetInputCard extends StatelessWidget {
     required this.selectedSubCategory,
     required this.onMainCategoryTap,
     required this.onSubCategoryTap,
-  required this.budgetInput,
-  required this.budgetController,
-  required this.onBudgetChanged,
+    required this.budgetInput,
+    required this.budgetController,
+    required this.onBudgetChanged,
+    required this.selectedType,
+    required this.onTypeChanged,
+    required this.budgetTypeOptions,
     required this.onAdd,
     required this.canAdd,
   });
@@ -62,8 +69,14 @@ class BudgetInputCard extends StatelessWidget {
               value: personInput.isEmpty ? null : personInput,
               items: personOptions
                   .map((p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p),
+                        value: p.personId,
+                        child: Row(
+                          children: [
+                          Icon(p.icon.icon, color: p.color, size: 16),
+                          const SizedBox(width: 8),
+                          Text(p.name),
+                          ],
+                        ),
                       ))
                   .toList(),
               onChanged: onPersonChanged,
@@ -121,13 +134,36 @@ class BudgetInputCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Type',
+                filled: true,
+                fillColor: Colors.grey[50],
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              value: selectedType.isEmpty ? null : selectedType,
+              items: budgetTypeOptions
+                  .map((t) => DropdownMenuItem(
+                        value: t.name,
+                        child: Row(
+                          children: [
+                            Icon(t.icon.icon, color: t.color, size: 16),
+                            const SizedBox(width: 8),
+                            Text(t.name),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+              onChanged: onTypeChanged,
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Budget',
+                      labelText: 'Amount',
                       filled: true,
                       fillColor: Colors.grey[50],
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

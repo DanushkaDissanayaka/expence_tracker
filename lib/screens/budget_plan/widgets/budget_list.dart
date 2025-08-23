@@ -1,3 +1,4 @@
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
 class BudgetList extends StatelessWidget {
@@ -8,7 +9,7 @@ class BudgetList extends StatelessWidget {
   final String editingPerson;
   final Function(String) onEditingBudgetChanged;
   final Function(String?) onEditingPersonChanged;
-  final List<String> personOptions;
+  final List<Person> personOptions;
   final Function(int, String, String) onEditSave;
   final Function(int) onEditStart;
   final Function(int) onDelete;
@@ -91,9 +92,9 @@ class BudgetList extends StatelessWidget {
                       value: editingPerson.isEmpty ? null : editingPerson,
                       items: personOptions
                         .map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p),
-                          ))
+                          value: p.personId,
+                          child: Text(p.name),
+                        ))
                         .toList(),
                       onChanged: onEditingPersonChanged,
                                       ),
@@ -121,6 +122,8 @@ class BudgetList extends StatelessWidget {
                                     Text(item['subCategory'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 2),
                                     Text('Person: ${item['person']}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                    const SizedBox(height: 2),
+                                    Text('Type: ${item['type'] ?? 'N/A'}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                                   ],
                                 ),
                         ),

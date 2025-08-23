@@ -1,3 +1,5 @@
+import 'package:expense_tracker/data/data.dart';
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'widgets/budget_input_card.dart';
 import 'widgets/budget_list.dart';
@@ -29,7 +31,9 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   String budgetInput = '';
   String personInput = '';
-  final List<String> personOptions = ['Shawn', 'Sam'];
+  String selectedType = '';
+  final List<Person> personOptions = persons;
+  final List<BudgetType> typeOptions = budgetTypeOption;
   final TextEditingController budgetController = TextEditingController();
   final List<Map<String, dynamic>> budgetList = [];
   bool showMainCategoryPanel = false;
@@ -99,6 +103,9 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                   budgetInput: budgetInput,
                   budgetController: budgetController,
                   onBudgetChanged: (v) => setState(() => budgetInput = v),
+                  selectedType: selectedType,
+                  budgetTypeOptions: typeOptions,
+                  onTypeChanged: (v) => setState(() => selectedType = v ?? ''),
                   onAdd: () {
                     setState(() {
                       budgetList.add({
@@ -106,11 +113,13 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                         'subCategory': selectedSubCategory,
                         'budget': budgetInput,
                         'person': personInput,
+                        'type': selectedType,
                       });
                       selectedMainCategory = '';
                       selectedSubCategory = '';
                       budgetInput = '';
                       personInput = '';
+                      selectedType = '';
                       budgetController.clear();
                     });
                   },
@@ -118,7 +127,8 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                       selectedMainCategory.isNotEmpty &&
                       selectedSubCategory.isNotEmpty &&
                       budgetInput.isNotEmpty &&
-                      personInput.isNotEmpty,
+                      personInput.isNotEmpty &&
+                      selectedType.isNotEmpty,
                 ),
                 const SizedBox(height: 24),
                 Text(

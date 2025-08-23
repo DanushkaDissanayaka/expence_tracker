@@ -1,3 +1,4 @@
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -37,4 +38,37 @@ List<Map<String, dynamic>> transactionData = [
     'totalAmount':'-79.00',
     'date':'Yesterday'
   }
+];
+
+List<Person> persons =[
+  Person(
+    personId: '1',
+    name: 'Sam',
+    icon: const Icon(FontAwesomeIcons.personDress),
+    color:Colors.pink
+  ),
+  Person(
+    personId: '2',
+    name: 'Shawn',
+    icon: const Icon(FontAwesomeIcons.person),
+    color:Colors.blue
+  )
+];
+
+List<BudgetType> budgetTypeOption =[
+  BudgetType(
+    name: 'Saving',
+    icon: const Icon(FontAwesomeIcons.piggyBank),
+    color: Colors.green
+  ),
+  BudgetType(
+    name: 'Income',
+    icon: const Icon(FontAwesomeIcons.wallet),
+    color: Colors.blue
+  ),
+  BudgetType(
+    name: 'Expenses',
+    icon: const Icon(FontAwesomeIcons.dollarSign),
+    color: Colors.red
+  )
 ];

@@ -1,0 +1,174 @@
+{
+  "month": 1,
+  "year": 2023,
+  "income": [
+    {
+      "category": "salary",
+      "amount": 5000,
+      "person": "sam"
+    },
+    {
+      "category": "salary",
+      "amount": 1200,
+      "person": "shawn"
+    }
+  ],
+
+  "saving": [
+    {
+      "category": "monthly saving",
+      "person": "sam",
+      "account": "savings",
+      "amount": 1000
+    },
+    {
+      "category": "monthly saving",
+      "person": "shawn",
+      "account": "savings",
+      "amount": 500
+    }
+  ],
+
+  "budget": [
+    {
+      "category": "Monthly fixed expenses",
+      "budget": [
+        {
+          "category": "House rental",
+          "amount": 1200,
+          "person": "shawn"
+        },
+        {
+          "category": "Electricity bill",
+          "amount": 100,
+          "person": "shawn"
+        },
+        {
+          "category": "Water bill",
+          "amount": 30,
+          "person": "shawn"
+        },
+        {
+          "category": "Loan",
+          "amount": 300,
+          "person": "shawn"
+        },
+        {
+          "category": "Broadband Bill",
+          "amount": 80,
+          "person": "shawn"
+        },
+        {
+          "category": "Mobile Reload",
+          "amount": 50,
+          "person": "shawn"
+        },
+        {
+          "category": "Credit Card Payment",
+          "amount": 150,
+          "person": "shawn"
+        }
+      ]
+    },
+    {
+      "category": "House Maintenance",
+      "budget": [
+        {
+          "category": "Groceries",
+          "amount": 400,
+          "person": "sam"
+        },
+        {
+          "category": "LP Gas",
+          "amount": 80,
+          "person": "sam"
+        },
+        {
+          "category": "Parents Pocket Money",
+          "amount": 200,
+          "person": "sam"
+        },
+        {
+          "category": "Fast Food",
+          "amount": 100,
+          "person": "sam"
+        }
+      ]
+    },
+    {
+      "category": "Activity",
+      "budget": [
+        {
+          "category": "Food/Dining Out",
+          "amount": 150,
+          "person": "sam"
+        },
+        {
+          "category": "Entertainment / Movie",
+          "amount": 100,
+          "person": "sam"
+        },
+        {
+          "category": "Travel",
+          "amount": 200,
+          "person": "sam"
+        },
+        {
+          "category": "Other activities",
+          "amount": 50,
+          "person": "sam"
+        },
+        {
+          "category": "Shopping",
+          "amount": 250,
+          "person": "sam"
+        }
+      ]
+    },
+    {
+      "category": "Transport",
+      "budget": [
+        {
+          "category": "Car Maintenance/Insurance",
+          "amount": 100,
+          "person": "shawn"
+        },
+        {
+          "category": "Gasoline",
+          "amount": 150,
+          "person": "shawn" 
+        },
+        {
+          "category": "Public Transportation / Taxi",
+          "amount": 80,
+          "person": "shawn"
+        },
+        {
+          "category": "Parking",
+          "amount": 50,
+          "person": "shawn"
+        }
+      ]
+    },
+    {
+      "category": "Personal",
+      "budget": [
+        {
+          "category": "Medical + Health Insurance",
+          "amount": 200,
+          "person": "sam"
+        },
+        {
+          "category": "Gym",
+          "amount": 50,
+          "person": "sam"
+        },
+        {
+          "category": "Pocket money",
+          "amount": 100,
+          "person": "sam"
+        }
+      ]
+    }
+  ]
+}
