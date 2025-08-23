@@ -3,3 +3,6 @@ export 'expense.dart';
 export 'total_expense.dart';
 export 'budget_type.dart';
 export 'person.dart';
+export 'sub_category.dart';
+export 'parent_category.dart';
+export 'budget_plan.dart';

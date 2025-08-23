@@ -17,17 +17,10 @@ class BudgetPlanScreen extends StatefulWidget {
 }
 
 class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
-  final Map<String, List<String>> mainCategories = {
-    "Living": ["Food", "Household", "Transport"],
-    "Personal": ["Apparel", "Beauty", "Health"],
-    "Social": ["Social Life", "Culture", "Gift"],
-    "Education": ["Education"],
-    "Pets": ["Pets"],
-    "Other": ["Other"],
-  };
+  final List<ParentCategory> mainCategories = getCategories();
 
-  String selectedMainCategory = '';
-  String selectedSubCategory = '';
+  SubCategory selectedMainCategory = SubCategory.empty();
+  SubCategory selectedSubCategory = SubCategory.empty();
   DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   String budgetInput = '';
   String personInput = '';
@@ -35,7 +28,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   final List<Person> personOptions = persons;
   final List<BudgetType> typeOptions = budgetTypeOption;
   final TextEditingController budgetController = TextEditingController();
-  final List<Map<String, dynamic>> budgetList = [];
+  final List<BudgetPlan> budgetList = [];
   bool showMainCategoryPanel = false;
   bool showSubCategoryPanel = false;
   int? editingIndex;
@@ -108,27 +101,32 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                   onTypeChanged: (v) => setState(() => selectedType = v ?? ''),
                   onAdd: () {
                     setState(() {
-                      budgetList.add({
-                        'mainCategory': selectedMainCategory,
-                        'subCategory': selectedSubCategory,
-                        'budget': budgetInput,
-                        'person': personInput,
-                        'type': selectedType,
-                      });
-                      selectedMainCategory = '';
-                      selectedSubCategory = '';
+                      budgetList.add(
+                        BudgetPlan(
+                          person: personOptions.firstWhere((p) => p.personId == personInput),
+                          budgetType: typeOptions.firstWhere((t) => t.budgetTypeId == selectedType),
+                          amount: double.tryParse(budgetInput) ?? 0,
+                          mainCategory: selectedMainCategory,
+                          subCategory: selectedSubCategory,
+                        )
+                      );
+
+                      selectedMainCategory = SubCategory.empty();
+                      selectedSubCategory = SubCategory.empty();
                       budgetInput = '';
                       personInput = '';
                       selectedType = '';
                       budgetController.clear();
+                      FocusScope.of(context).unfocus();
                     });
                   },
-                  canAdd:
-                      selectedMainCategory.isNotEmpty &&
-                      selectedSubCategory.isNotEmpty &&
-                      budgetInput.isNotEmpty &&
-                      personInput.isNotEmpty &&
-                      selectedType.isNotEmpty,
+                  canAdd: (selectedType == '1' || selectedType == '2')
+                      ? budgetInput.isNotEmpty && personInput.isNotEmpty && selectedType.isNotEmpty
+                      : selectedMainCategory.isNotEmpty() &&
+                        selectedSubCategory.isNotEmpty() &&
+                        budgetInput.isNotEmpty &&
+                        personInput.isNotEmpty &&
+                        selectedType.isNotEmpty,
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -154,18 +152,19 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                         setState(() => editingPerson = v ?? ''),
                     onEditSave: (i, person, budget) {
                       setState(() {
-                        budgetList[i]['person'] = person;
-                        budgetList[i]['budget'] = budget;
+                        budgetList[i].person = personOptions.firstWhere((p) => p.personId == person);
+                        budgetList[i].amount = double.tryParse(budget) ?? 0;
                         editingIndex = null;
                         editingBudget = '';
                         editingPerson = '';
                       });
+                      FocusScope.of(context).unfocus();
                     },
                     onEditStart: (i) {
                       setState(() {
                         editingIndex = i;
-                        editingBudget = budgetList[i]['budget'];
-                        editingPerson = budgetList[i]['person'];
+                        editingBudget = budgetList[i].amount.toString();
+                        editingPerson = budgetList[i].person.personId;
                       });
                     },
                     onDelete: (i) {
@@ -193,11 +192,11 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
           if (showMainCategoryPanel)
             CategoryPanel(
               title: "Select Main Category",
-              options: mainCategories.keys.toList(),
-              onSelect: (mainCat) {
+              options: parentCategories,
+              onSelect: (parentCatId) {
                 setState(() {
-                  selectedMainCategory = mainCat;
-                  selectedSubCategory = '';
+                  selectedMainCategory = parentCatId;
+                  selectedSubCategory = SubCategory.empty();
                   showMainCategoryPanel = false;
                 });
               },
@@ -207,10 +206,13 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                 });
               },
             ),
-          if (showSubCategoryPanel && selectedMainCategory.isNotEmpty)
+          if (showSubCategoryPanel && selectedMainCategory.isNotEmpty())
             CategoryPanel(
               title: "Select Sub Category",
-              options: mainCategories[selectedMainCategory]!,
+              options: mainCategories
+                  .firstWhere((cat) =>
+                      cat.parent.categoryId == selectedMainCategory.categoryId)
+                  .children,
               onSelect: (subCat) {
                 setState(() {
                   selectedSubCategory = subCat;

@@ -1,9 +1,10 @@
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
 class CategoryPanel extends StatelessWidget {
   final String title;
-  final List<String> options;
-  final Function(String) onSelect;
+  final List<SubCategory> options;
+  final Function(SubCategory) onSelect;
   final VoidCallback onClose;
 
   const CategoryPanel({
@@ -45,7 +46,7 @@ class CategoryPanel extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, idx) {
                     return ListTile(
-                      title: Text(options[idx], style: const TextStyle(fontSize: 15)),
+                      title: Text(options[idx].name, style: const TextStyle(fontSize: 15)),
                       onTap: () => onSelect(options[idx]),
                     );
                   },
