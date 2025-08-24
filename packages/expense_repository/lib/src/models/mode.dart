@@ -5,4 +5,5 @@ export 'budget_type.dart';
 export 'person.dart';
 export 'sub_category.dart';
 export 'parent_category.dart';
+export 'budget.dart';
 export 'budget_plan.dart';

@@ -1,10 +1,10 @@
-import 'package:expense_tracker/data/data.dart';
+import 'package:expenses_repository/src/data/data.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
 class BudgetList extends StatelessWidget {
   final List<ParentCategory> mainCategories;
-  final List<BudgetPlan> budgetList;
+  final List<Budget> budgetList;
   final int? editingIndex;
   final String editingBudget;
   final String editingPerson;

@@ -1,4 +1,3 @@
-import 'package:expenses_repository/src/models/mode.dart';
 import 'package:flutter/material.dart';
 
 class SubCategory {

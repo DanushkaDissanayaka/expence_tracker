@@ -1,4 +1,4 @@
-import 'package:expense_tracker/data/data.dart';
+import 'package:expenses_repository/src/data/data.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'widgets/budget_input_card.dart';
@@ -28,29 +28,12 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   final List<Person> personOptions = persons;
   final List<BudgetType> typeOptions = budgetTypeOption;
   final TextEditingController budgetController = TextEditingController();
-  final List<BudgetPlan> budgetList = [];
+  final List<Budget> budgetList = [];
   bool showMainCategoryPanel = false;
   bool showSubCategoryPanel = false;
   int? editingIndex;
   String editingBudget = '';
   String editingPerson = '';
-
-  Future<void> _pickMonth() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedMonth,
-      firstDate: DateTime(now.year - 2, 1),
-      lastDate: DateTime(now.year + 2, 12),
-      selectableDayPredicate: (date) => date.day == 1,
-      helpText: 'Select Month',
-    );
-    if (picked != null) {
-      setState(() {
-        selectedMonth = DateTime(picked.year, picked.month);
-      });
-    }
-  }
 
   String get formattedMonth =>
       "${selectedMonth.year}-${selectedMonth.month.toString().padLeft(2, '0')}";
@@ -102,7 +85,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                   onAdd: () {
                     setState(() {
                       budgetList.add(
-                        BudgetPlan(
+                        Budget(
                           person: personOptions.firstWhere((p) => p.personId == personInput),
                           budgetType: typeOptions.firstWhere((t) => t.budgetTypeId == selectedType),
                           amount: double.tryParse(budgetInput) ?? 0,
