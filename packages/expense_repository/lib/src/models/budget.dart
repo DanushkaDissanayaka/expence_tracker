@@ -30,10 +30,17 @@ class Budget {
   factory Budget.fromEntity(BudgetEntity entity) {
     return Budget(
       person: persons.firstWhere((p) => p.personId == entity.personId),
-      budgetType: budgetTypeOption.firstWhere((t) => t.budgetTypeId == entity.budgetTypeId),
+      budgetType: budgetTypeOption
+          .firstWhere((t) => t.budgetTypeId == entity.budgetTypeId),
       amount: entity.amount,
-      mainCategory: parentCategories.firstWhere((c) => c.categoryId == entity.mainCategoryId),
-      subCategory: subCategories.firstWhere((c) => c.categoryId == entity.subCategoryId),
+      mainCategory: entity.mainCategoryId.isNotEmpty
+          ? parentCategories
+              .firstWhere((c) => c.categoryId == entity.mainCategoryId)
+          : SubCategory.empty(),
+      subCategory: entity.subCategoryId.isNotEmpty
+          ? subCategories
+              .firstWhere((c) => c.categoryId == entity.subCategoryId)
+          : SubCategory.empty(),
     );
   }
 }

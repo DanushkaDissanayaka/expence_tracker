@@ -1,5 +1,9 @@
 import 'dart:math';
+import 'package:expense_tracker/screens/budget_plan/blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
+import 'package:expense_tracker/screens/budget_plan/blocs/get_budget_plans_bloc/get_budget_plans_bloc.dart';
+import 'package:expense_tracker/screens/budget_plan/budget_plan_list_screen.dart';
 import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -80,7 +84,12 @@ class _MainScreenState extends State<MainScreen> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const BudgetPlanScreen(),
+                            builder: (context) => MultiBlocProvider(
+                              providers: [
+                                BlocProvider(create: (context) => CreateBudgetPlanBloc(FirebaseBudgetRepository())),
+                              ],
+                              child: const BudgetPlanScreen(),
+                            ),
                           ),
                         );
                       },
@@ -88,7 +97,18 @@ class _MainScreenState extends State<MainScreen> {
                       tooltip: 'Budget Plan',
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => MultiBlocProvider(
+                              providers: [
+                                BlocProvider(create: (context) =>  GetBudgetPlansBloc(FirebaseBudgetRepository())..add(const GetBudgetPlans())),
+                              ],
+                              child: const BudgetPlanListScreen(),
+                            ),
+                          ),
+                        );
+                      },
                       icon: Icon(CupertinoIcons.settings),
                     ),
                   ],
@@ -269,89 +289,97 @@ class _MainScreenState extends State<MainScreen> {
                     final expenses = state.expenses;
                     if (expenses.isEmpty) {
                       return const Center(child: Text('No expenses found.'));
-                    } 
+                    }
                     return ListView.builder(
                       itemCount: expenses.length,
-                    itemBuilder: (context, int i) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          width: 50,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                            color: Color(expenses[i].category.color),
-                                            shape: BoxShape.circle,
+                      itemBuilder: (context, int i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: Color(
+                                                expenses[i].category.color,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
                                           ),
+                                          Image.asset(
+                                            'assets/${expenses[i].category.icon}',
+                                            scale: 2,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(width: 12.0),
+                                      Text(
+                                        expenses[i].category.name,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          fontWeight: FontWeight.w500,
                                         ),
-                                        Image.asset(
-                                          'assets/${expenses[i].category.icon}',
-                                          scale: 2,
-                                          color: Colors.white ,
-                                        )
-                                      ],
-                                    ),
-                                    SizedBox(width: 12.0),
-                                    Text(
-                                      expenses[i].category.name,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                        fontWeight: FontWeight.w500,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      expenses[i].totalAmount.toString(),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                        fontWeight: FontWeight.w400,
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        expenses[i].totalAmount.toString(),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      expenses[i].lastTransactionDate.toLocal().toString().split(' ')[0],
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.outline,
-                                        fontWeight: FontWeight.w400,
+                                      Text(
+                                        expenses[i].lastTransactionDate
+                                            .toLocal()
+                                            .toString()
+                                            .split(' ')[0],
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outline,
+                                          fontWeight: FontWeight.w400,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
+                        );
+                      },
+                    );
                   } else if (state is GetExpensesFailure) {
-                    return const Center(child: Text('Failed to load expenses.'));
+                    return const Center(
+                      child: Text('Failed to load expenses.'),
+                    );
                   }
                   return const SizedBox();
                 },

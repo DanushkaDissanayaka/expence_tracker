@@ -23,14 +23,16 @@ class BudgetPlanEntity {
     };
   }
 
-  factory BudgetPlanEntity.fromDocument(Map<String, dynamic> doc) {
-    return BudgetPlanEntity(
+  static BudgetPlanEntity fromDocument(Map<String, dynamic> doc) {
+    final entity = BudgetPlanEntity(
       budgetPlanId: doc['budgetPlanId'] as String,
       month: doc['month'] as int,
       year: doc['year'] as int,
       budgetPlan: (doc['budgetPlan'] as List)
-          .map((e) => BudgetEntity.fromDocument(e as Map<String, Object>))
+          .map((e) => BudgetEntity.fromDocument(e))
           .toList(),
     );
+
+    return entity;
   }
 }

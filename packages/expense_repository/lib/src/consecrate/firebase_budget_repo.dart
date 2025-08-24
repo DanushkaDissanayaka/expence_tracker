@@ -35,7 +35,7 @@ class FirebaseBudgetRepository implements BudgetRepository {
 
 
   @override
-  Future<List<BudgetPlan>> getBudgetPlans(String budgetPlanId) async {
+  Future<List<BudgetPlan>> getBudgetPlans() async {
     try {
       return await budgetPlanCollection.get().then((value) => value.docs
           .map((doc) =>

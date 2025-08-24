@@ -24,7 +24,7 @@ class BudgetEntity {
     };
   }
 
-  factory BudgetEntity.fromDocument(Map<String, Object> doc) {
+  static BudgetEntity fromDocument(Map<String, dynamic> doc) {
     return BudgetEntity(
       personId: doc['personId'] as String,
       budgetTypeId: doc['budgetTypeId'] as String,
