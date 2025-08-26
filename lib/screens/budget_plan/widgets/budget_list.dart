@@ -1,3 +1,4 @@
+import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expenses_repository/src/data/data.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
@@ -181,7 +182,7 @@ class BudgetList extends StatelessWidget {
                     border: Border.all(color: color.withOpacity(0.2)),
                   ),
                   child: Text(
-                    '\$${total.toStringAsFixed(2)}',
+                    formatToCurrency(total),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -231,8 +232,7 @@ class BudgetList extends StatelessWidget {
             ),
             child: Icon(
               item.subCategory.isNotEmpty() 
-                  ? (item.subCategory.icon.icon ?? Icons.category)
-                  : (item.mainCategory.icon.icon ?? Icons.category),
+                  ? (item.subCategory.icon.icon) : item.person.icon.icon,
               size: 16,
               color: const Color(0xFF64748B),
             ),
@@ -255,19 +255,17 @@ class BudgetList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          item.subCategory.isNotEmpty() 
-              ? item.subCategory.name 
-              : item.mainCategory.name,
+        item.subCategory.isNotEmpty() ? Text(
+          item.subCategory.name,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF2D3748),
           ),
-        ),
+        ):const SizedBox.shrink(),
         const SizedBox(height: 2),
         Text(
-          'Person: ${item.person.name}',
+          item.person.name,
           style: const TextStyle(
             fontSize: 13,
             color: Color(0xFF64748B),
@@ -339,7 +337,7 @@ class BudgetList extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            '\$${amount.toStringAsFixed(2)}',
+            formatToCurrency(amount),
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
