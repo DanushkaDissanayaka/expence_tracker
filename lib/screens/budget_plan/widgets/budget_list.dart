@@ -86,18 +86,18 @@ class BudgetList extends StatelessWidget {
           // Income Section
           if (incomeBudgets.isNotEmpty) 
             _buildBudgetSection(
-              title: 'Income',
+              title: income.name,
               budgets: incomeBudgets,
-              color: const Color(0xFF10B981),
+              color: income.color,
               backgroundColor: const Color(0xFFF0FDF4),
             ),
           
           // Savings Section  
           if (savingBudgets.isNotEmpty)
             _buildBudgetSection(
-              title: 'Savings',
+              title: saving.name,
               budgets: savingBudgets,
-              color: const Color(0xFFF59E0B),
+              color: saving.color,
               backgroundColor: const Color(0xFFFFF7ED),
             ),
 
@@ -111,7 +111,7 @@ class BudgetList extends StatelessWidget {
             return _buildBudgetSection(
               title: mainCat.parent.name,
               budgets: categoryBudgets,
-              color: const Color(0xFFEF4444),
+              color: expenses.color,
               backgroundColor: const Color(0xFFFEF2F2),
             );
           }),

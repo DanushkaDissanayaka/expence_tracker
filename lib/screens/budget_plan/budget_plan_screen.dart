@@ -53,6 +53,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
         personOptions: personOptions,
         budgetTypeOptions: typeOptions,
         mainCategories: mainCategories,
+        budgetList: budgetList,
         onAdd: (Budget budget) {
           setState(() {
             budgetList.add(budget);

@@ -1,3 +1,5 @@
+import 'package:expense_tracker/common/helper/calculation_helper.dart';
+import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ class BudgetInputDialog extends StatefulWidget {
   final List<BudgetType> budgetTypeOptions;
   final List<ParentCategory> mainCategories;
   final Function(Budget) onAdd;
+  final List<Budget> budgetList;
 
   const BudgetInputDialog({
     super.key,
@@ -15,6 +18,7 @@ class BudgetInputDialog extends StatefulWidget {
     required this.budgetTypeOptions,
     required this.mainCategories,
     required this.onAdd,
+    required this.budgetList, // For validation only
   });
 
   @override
@@ -30,14 +34,42 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
   SubCategory selectedSubCategory = SubCategory.empty();
   bool showMainCategoryPanel = false;
   bool showSubCategoryPanel = false;
+  String? amountError;
 
-  bool get canAdd => (selectedType == '1' || selectedType == '2')
-      ? budgetInput.isNotEmpty && personInput.isNotEmpty && selectedType.isNotEmpty
-      : selectedMainCategory.isNotEmpty() &&
-          selectedSubCategory.isNotEmpty() &&
-          budgetInput.isNotEmpty &&
-          personInput.isNotEmpty &&
-          selectedType.isNotEmpty;
+  void validateAmountError() {
+    if (budgetInput.isEmpty) {
+      amountError = null;
+      return;
+    }
+    if (!isAmountValid) {
+      final maxAllowedAmount = getTotalBudget(budgetList, personInput.isEmpty ? null : personInput);
+      amountError = 'Amount should not exceed Rs. ${formatToCurrency(maxAllowedAmount)}';
+    } else {
+      amountError = null;
+    }
+  }
+
+  double calculateAmount() {
+    return double.tryParse(budgetInput) ?? 0;
+  }
+
+// Use budgetList from parent screen for validation
+List<Budget> get budgetList => widget.budgetList;
+
+  bool get isAmountValid {
+    final value = double.tryParse(budgetInput) ?? 0;
+    final maxAllowedAmount = getTotalBudget(budgetList, personInput.isEmpty ? null : personInput);
+    return selectedType == income.budgetTypeId || value <= maxAllowedAmount;
+  }
+
+  bool get canAdd => (selectedType == income.budgetTypeId || selectedType == saving.budgetTypeId)
+    ? budgetInput.isNotEmpty && personInput.isNotEmpty && selectedType.isNotEmpty && isAmountValid
+    : selectedMainCategory.isNotEmpty() &&
+      selectedSubCategory.isNotEmpty() &&
+      budgetInput.isNotEmpty &&
+      personInput.isNotEmpty &&
+      selectedType.isNotEmpty &&
+      isAmountValid;
 
   @override
   void dispose() {
@@ -137,14 +169,19 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
                                 value: t.budgetTypeId,
                                 child: Row(
                                   children: [
-                                    Icon(t.icon.icon, color: const Color(0xFF6B7280), size: 16),
+                                    Icon(t.icon.icon, color: t.color, size: 16),
                                     const SizedBox(width: 8),
                                     Text(t.name),
                                   ],
                                 ),
                               ))
                           .toList(),
-                      onChanged: (v) => setState(() => selectedType = v ?? ''),
+                      onChanged: (v) {
+                        setState(() {
+                          selectedType = v ?? '';
+                          validateAmountError();
+                        });
+                      },
                     ),
                     const SizedBox(height: 12),
                     _buildDropdownField(
@@ -162,7 +199,12 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
                                 ),
                               ))
                           .toList(),
-                      onChanged: (v) => setState(() => personInput = v ?? ''),
+                      onChanged: (v) {
+                        setState(() {
+                          personInput = v ?? '';
+                          validateAmountError();
+                        });
+                      },
                     ),
 
                     // Category Selectors (only show for expense types)
@@ -198,8 +240,14 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
                       label: 'Amount',
                       controller: budgetController,
                       keyboardType: TextInputType.number,
-                      onChanged: (v) => setState(() => budgetInput = v),
+                      onChanged: (v) {
+                        setState(() {
+                          budgetInput = v;
+                          validateAmountError();
+                        });
+                      },
                       prefixIcon: Icons.attach_money,
+                      errorText: amountError,
                     ),
                   ],
                 ),
@@ -545,6 +593,7 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
     required Function(String) onChanged,
     TextInputType? keyboardType,
     IconData? prefixIcon,
+    String? errorText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -564,21 +613,39 @@ class _BudgetInputDialogState extends State<BudgetInputDialog> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              prefixIcon: prefixIcon != null
-                  ? Icon(
-                      prefixIcon,
-                      size: 18,
-                      color: const Color(0xFF6B7280),
-                    )
-                  : null,
-            ),
+          child: Column(
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: keyboardType,
+                onChanged: onChanged,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  prefixIcon: prefixIcon != null
+                      ? Icon(
+                          prefixIcon,
+                          size: 18,
+                          color: const Color(0xFF6B7280),
+                        )
+                      : null,
+                ),
+              ),
+              if (errorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      errorText,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],

@@ -21,21 +21,21 @@ BudgetType saving = BudgetType(
   budgetTypeId: '1',
   name: 'Saving',
   icon: const Icon(FontAwesomeIcons.piggyBank),
-  color: Colors.green,
+  color: Color(0xFFF59E0B),
 );
 
 BudgetType income = BudgetType(
   budgetTypeId: '2',
   name: 'Income',
   icon: const Icon(FontAwesomeIcons.wallet),
-  color: Colors.blue,
+  color: Color(0xFF10B981),
 );
 
 BudgetType expenses = BudgetType(
   budgetTypeId: '3',
   name: 'Expenses',
   icon: const Icon(FontAwesomeIcons.dollarSign),
-  color: Colors.red,
+  color: Color(0xFFEF4444),
 );
 
 List<BudgetType> budgetTypeOption = [saving, income, expenses];
