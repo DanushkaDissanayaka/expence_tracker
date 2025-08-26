@@ -3,9 +3,8 @@ import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'widgets/budget_input_card.dart';
+import 'widgets/budget_input_dialog.dart';
 import 'widgets/budget_list.dart';
-import 'widgets/category_panel.dart';
 
 int? editingIndex;
 String editingBudget = '';
@@ -24,18 +23,10 @@ class BudgetPlanScreen extends StatefulWidget {
 class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   final List<ParentCategory> mainCategories = getCategories();
 
-  SubCategory selectedMainCategory = SubCategory.empty();
-  SubCategory selectedSubCategory = SubCategory.empty();
   DateTime selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
-  String budgetInput = '';
-  String personInput = '';
-  String selectedType = '';
   final List<Person> personOptions = persons;
   final List<BudgetType> typeOptions = budgetTypeOption;
-  final TextEditingController budgetController = TextEditingController();
   List<Budget> budgetList = [];
-  bool showMainCategoryPanel = false;
-  bool showSubCategoryPanel = false;
   int? editingIndex;
   String editingBudget = '';
   String editingPerson = '';
@@ -53,15 +44,31 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
     }
   }
 
+  void _showBudgetInputDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => BudgetInputDialog(
+        formattedMonth: formattedMonth,
+        personOptions: personOptions,
+        budgetTypeOptions: typeOptions,
+        mainCategories: mainCategories,
+        onAdd: (Budget budget) {
+          setState(() {
+            budgetList.add(budget);
+          });
+        },
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    budgetController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final divider = Divider(color: Colors.grey.shade300, height: 1);
     return BlocListener<CreateBudgetPlanBloc, CreateBudgetPlanState>(
       listener: (context, state) {
         if (state is CreateBudgetPlanLoading) {
@@ -77,19 +84,42 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
           setState(() {
             isLoading = false;
           });
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.error)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          );
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('Monthly Budget Plan'),
+          title: const Text(
+            'Budget Plan',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          centerTitle: false,
           elevation: 0,
           backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+          surfaceTintColor: Colors.transparent,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Color(0xFF2D3748),
+              size: 20,
+            ),
+          ),
         ),
-        backgroundColor: Colors.grey[100],
         body: Stack(
           children: [
             Padding(
@@ -100,115 +130,157 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 20, color: Colors.blueAccent),
-                      const SizedBox(width: 8),
-                      const Text('Month:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      const SizedBox(width: 12),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        onPressed: () async {
-                          final now = DateTime.now();
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: selectedMonth,
-                            firstDate: DateTime(now.year, now.month),
-                            lastDate: DateTime(now.year + 5, 12),
-                            helpText: 'Select Month',
-                            fieldHintText: 'Month/Year',
-                            builder: (context, child) {
-                              return Theme(
-                                data: Theme.of(context).copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: Colors.blueAccent,
-                                    onPrimary: Colors.white,
-                                    onSurface: Colors.black,
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
-                          if (picked != null && (picked.year > now.year || (picked.year == now.year && picked.month >= now.month))) {
-                            setState(() {
-                              selectedMonth = DateTime(picked.year, picked.month);
-                            });
-                          }
-                        },
-                        child: Text(formattedMonth, style: const TextStyle(fontSize: 16)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  BudgetInputCard(
-                    formattedMonth: formattedMonth,
-                    personInput: personInput,
-                    personOptions: personOptions,
-                    onPersonChanged: (v) =>
-                        setState(() => personInput = v ?? ''),
-                    selectedMainCategory: selectedMainCategory,
-                    selectedSubCategory: selectedSubCategory,
-                    onMainCategoryTap: () =>
-                        setState(() => showMainCategoryPanel = true),
-                    onSubCategoryTap: () =>
-                        setState(() => showSubCategoryPanel = true),
-                    budgetInput: budgetInput,
-                    budgetController: budgetController,
-                    onBudgetChanged: (v) => setState(() => budgetInput = v),
-                    selectedType: selectedType,
-                    budgetTypeOptions: typeOptions,
-                    onTypeChanged: (v) =>
-                        setState(() => selectedType = v ?? ''),
-                    onAdd: () {
-                      setState(() {
-                        budgetList.add(
-                          Budget(
-                            person: personOptions.firstWhere(
-                              (p) => p.personId == personInput,
-                            ),
-                            budgetType: typeOptions.firstWhere(
-                              (t) => t.budgetTypeId == selectedType,
-                            ),
-                            amount: double.tryParse(budgetInput) ?? 0,
-                            mainCategory: selectedMainCategory,
-                            subCategory: selectedSubCategory,
+                  // Month Selection Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        );
-
-                        selectedMainCategory = SubCategory.empty();
-                        selectedSubCategory = SubCategory.empty();
-                        budgetInput = '';
-                        personInput = '';
-                        selectedType = '';
-                        budgetController.clear();
-                        FocusScope.of(context).unfocus();
-                      });
-                    },
-                    canAdd: (selectedType == '1' || selectedType == '2')
-                        ? budgetInput.isNotEmpty &&
-                              personInput.isNotEmpty &&
-                              selectedType.isNotEmpty
-                        : selectedMainCategory.isNotEmpty() &&
-                              selectedSubCategory.isNotEmpty() &&
-                              budgetInput.isNotEmpty &&
-                              personInput.isNotEmpty &&
-                              selectedType.isNotEmpty,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Budgets for $formattedMonth',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                          child: const Icon(
+                            Icons.calendar_today,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'For:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final now = DateTime.now();
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedMonth,
+                                firstDate: DateTime(now.year, now.month),
+                                lastDate: DateTime(now.year + 5, 12),
+                                helpText: 'Select Month',
+                                fieldHintText: 'Month/Year',
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF3B82F6),
+                                        onPrimary: Colors.white,
+                                        onSurface: Color(0xFF2D3748),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null && 
+                                  (picked.year > now.year || 
+                                   (picked.year == now.year && picked.month >= now.month))) {
+                                setState(() {
+                                  selectedMonth = DateTime(picked.year, picked.month);
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    formattedMonth,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF2D3748),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 20,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                            onPressed: _showBudgetInputDialog,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Icon(Icons.add),
+                          ),
+                  
+                      ],
                     ),
                   ),
-                  divider,
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 24),
+                  // Budget List Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(
+                            Icons.list_alt,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Budgets for $formattedMonth',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2D3748),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: BudgetList(
                       mainCategories: mainCategories,
@@ -261,68 +333,64 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    height: kToolbarHeight,
-                    child: isLoading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
-                      onPressed: budgetList.isNotEmpty
-                          ? () {
-                              // create or update budget plan
-                              BudgetPlan newPlan = BudgetPlan(
-                                budgetPlanId: widget.initialPlan?.budgetPlanId ?? const Uuid().v1(),
-                                month: selectedMonth.month,
-                                year: selectedMonth.year,
-                                budgetPlan: budgetList,
-                              );
-                              context.read<CreateBudgetPlanBloc>().add(
-                                CreateBudgetPlan(newPlan),
-                              );
-                            }
-                          : null,
-                      child: const Text('Save'),
-                    ),
+                    width: double.infinity,
+                    height: 52,
+                    child: isLoading 
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                              ),
+                            ),
+                          )
+                        : ElevatedButton(
+                            onPressed: budgetList.isNotEmpty
+                                ? () {
+                                    BudgetPlan newPlan = BudgetPlan(
+                                      budgetPlanId: widget.initialPlan?.budgetPlanId ?? const Uuid().v1(),
+                                      month: selectedMonth.month,
+                                      year: selectedMonth.year,
+                                      budgetPlan: budgetList,
+                                    );
+                                    context.read<CreateBudgetPlanBloc>().add(
+                                      CreateBudgetPlan(newPlan),
+                                    );
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: budgetList.isNotEmpty
+                                  ? Theme.of(context).colorScheme.primary
+                                  : const Color(0xFFF1F5F9),
+                              foregroundColor: budgetList.isNotEmpty 
+                                  ? Colors.white 
+                                  : const Color(0xFF94A3B8),
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               ),
             ),
-            if (showMainCategoryPanel)
-              CategoryPanel(
-                title: "Select Main Category",
-                options: parentCategories,
-                onSelect: (parentCatId) {
-                  setState(() {
-                    selectedMainCategory = parentCatId;
-                    selectedSubCategory = SubCategory.empty();
-                    showMainCategoryPanel = false;
-                  });
-                },
-                onClose: () {
-                  setState(() {
-                    showMainCategoryPanel = false;
-                  });
-                },
-              ),
-            if (showSubCategoryPanel && selectedMainCategory.isNotEmpty())
-              CategoryPanel(
-                title: "Select Sub Category",
-                options: mainCategories
-                    .firstWhere(
-                      (cat) =>
-                          cat.parent.categoryId ==
-                          selectedMainCategory.categoryId,
-                    )
-                    .children,
-                onSelect: (subCat) {
-                  setState(() {
-                    selectedSubCategory = subCat;
-                    showSubCategoryPanel = false;
-                  });
-                },
-                onClose: () {
-                  setState(() {
-                    showSubCategoryPanel = false;
-                  });
-                },
-              ),
           ],
         ),
       ),

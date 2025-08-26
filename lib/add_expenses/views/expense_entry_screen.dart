@@ -1,4 +1,4 @@
-import 'package:expense_tracker/add_expenses/views/category_panel.dart';
+import 'package:expense_tracker/common/widgets/category_panel.dart';
 import 'package:expense_tracker/common/widgets/form_row.dart';
 import 'package:expense_tracker/common/widgets/number_pad.dart';
 import 'package:flutter/material.dart';
