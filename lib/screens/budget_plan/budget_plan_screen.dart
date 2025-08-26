@@ -1,6 +1,4 @@
-import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_expense_bloc.dart';
 import 'package:expense_tracker/screens/budget_plan/blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
-import 'package:expenses_repository/src/data/data.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,12 +11,15 @@ int? editingIndex;
 String editingBudget = '';
 String editingPerson = '';
 
+
 class BudgetPlanScreen extends StatefulWidget {
-  const BudgetPlanScreen({super.key});
+  final BudgetPlan? initialPlan;
+  const BudgetPlanScreen({Key? key, this.initialPlan}) : super(key: key);
 
   @override
   State<BudgetPlanScreen> createState() => _BudgetPlanScreenState();
 }
+
 
 class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   final List<ParentCategory> mainCategories = getCategories();
@@ -32,7 +33,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   final List<Person> personOptions = persons;
   final List<BudgetType> typeOptions = budgetTypeOption;
   final TextEditingController budgetController = TextEditingController();
-  final List<Budget> budgetList = [];
+  List<Budget> budgetList = [];
   bool showMainCategoryPanel = false;
   bool showSubCategoryPanel = false;
   int? editingIndex;
@@ -42,6 +43,15 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
 
   String get formattedMonth =>
       "${selectedMonth.year}-${selectedMonth.month.toString().padLeft(2, '0')}";
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPlan != null) {
+      selectedMonth = DateTime(widget.initialPlan!.year, widget.initialPlan!.month);
+      budgetList = List<Budget>.from(widget.initialPlan!.budgetPlan);
+    }
+  }
 
   @override
   void dispose() {
@@ -90,6 +100,51 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today, size: 20, color: Colors.blueAccent),
+                      const SizedBox(width: 8),
+                      const Text('Month:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () async {
+                          final now = DateTime.now();
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedMonth,
+                            firstDate: DateTime(now.year, now.month),
+                            lastDate: DateTime(now.year + 5, 12),
+                            helpText: 'Select Month',
+                            fieldHintText: 'Month/Year',
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: ColorScheme.light(
+                                    primary: Colors.blueAccent,
+                                    onPrimary: Colors.white,
+                                    onSurface: Colors.black,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+                          if (picked != null && (picked.year > now.year || (picked.year == now.year && picked.month >= now.month))) {
+                            setState(() {
+                              selectedMonth = DateTime(picked.year, picked.month);
+                            });
+                          }
+                        },
+                        child: Text(formattedMonth, style: const TextStyle(fontSize: 16)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   BudgetInputCard(
                     formattedMonth: formattedMonth,
                     personInput: personInput,
@@ -211,9 +266,9 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                     child: isLoading ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
                       onPressed: budgetList.isNotEmpty
                           ? () {
-                              // create budget plan
+                              // create or update budget plan
                               BudgetPlan newPlan = BudgetPlan(
-                                budgetPlanId: const Uuid().v1(),
+                                budgetPlanId: widget.initialPlan?.budgetPlanId ?? const Uuid().v1(),
                                 month: selectedMonth.month,
                                 year: selectedMonth.year,
                                 budgetPlan: budgetList,

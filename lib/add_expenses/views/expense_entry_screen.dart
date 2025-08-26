@@ -1,11 +1,11 @@
+import 'package:expense_tracker/add_expenses/views/category_panel.dart';
+import 'package:expense_tracker/common/widgets/form_row.dart';
+import 'package:expense_tracker/common/widgets/number_pad.dart';
 import 'package:flutter/material.dart';
-import 'form_row.dart';
 import 'segmented.dart';
 import 'account_panel.dart';
-import 'category_panel.dart';
 import 'income_category_panel.dart';
 import 'transfer_category_panel.dart';
-import 'number_pad.dart';
 
 
 enum FocusField { none, amount, category, account }

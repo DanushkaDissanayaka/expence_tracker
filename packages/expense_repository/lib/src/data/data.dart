@@ -286,7 +286,7 @@ List<SubCategory> parentCategories = [
   ),
 ];
 
-getCategories() {
+List<ParentCategory> getCategories() {
   List<ParentCategory> categoriesWithSub = [];
 
   for (var parent in parentCategories) {

@@ -103,6 +103,7 @@ class _MainScreenState extends State<MainScreen> {
                             builder: (context) => MultiBlocProvider(
                               providers: [
                                 BlocProvider(create: (context) =>  GetBudgetPlansBloc(FirebaseBudgetRepository())..add(const GetBudgetPlans())),
+                                BlocProvider(create: (context) => CreateBudgetPlanBloc(FirebaseBudgetRepository())),
                               ],
                               child: const BudgetPlanListScreen(),
                             ),

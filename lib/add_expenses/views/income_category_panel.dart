@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'panel_header.dart';
+import 'package:expense_tracker/common/widgets/panel_header.dart';
 
 class IncomeCategoryPanel extends StatelessWidget {
   const IncomeCategoryPanel({super.key, required this.onPick, required this.onClose});

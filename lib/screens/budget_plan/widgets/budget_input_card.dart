@@ -41,203 +41,191 @@ class BudgetInputCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today,
-                  size: 20,
-                  color: Colors.blueAccent,
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Type',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'Month:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(width: 12),
-                Text(formattedMonth, style: const TextStyle(fontSize: 16)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: 'Type',
-                filled: true,
-                fillColor: Colors.grey[50],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              value: selectedType.isEmpty ? null : selectedType,
-              items: budgetTypeOptions
-                  .map(
-                    (t) => DropdownMenuItem(
-                      value: t.budgetTypeId,
-                      child: Row(
-                        children: [
-                          Icon(t.icon.icon, color: t.color, size: 16),
-                          const SizedBox(width: 8),
-                          Text(t.name),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: onTypeChanged,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: 'Person',
-                filled: true,
-                fillColor: Colors.grey[50],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              value: personInput.isEmpty ? null : personInput,
-              items: personOptions
-                  .map(
-                    (p) => DropdownMenuItem(
-                      value: p.personId,
-                      child: Row(
-                        children: [
-                          Icon(p.icon.icon, color: p.color, size: 16),
-                          const SizedBox(width: 8),
-                          Text(p.name),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: onPersonChanged,
-            ),
-            const SizedBox(height: 16),
-            if (selectedType != '1' && selectedType != '2' && selectedType != '')
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onMainCategoryTap,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          border: Border.all(
-                            color: Colors.blueAccent.withOpacity(0.2),
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                value: selectedType.isEmpty ? null : selectedType,
+                items: budgetTypeOptions
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t.budgetTypeId,
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.category,
-                              color: Colors.blueAccent,
-                              size: 18,
-                            ),
+                            Icon(t.icon.icon, color: t.color, size: 16),
                             const SizedBox(width: 8),
-                            Text(
-                              selectedMainCategory.isNotEmpty()
-                                  ? selectedMainCategory.name
-                                  : 'Main Category',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text(t.name),
                           ],
                         ),
                       ),
-                    ),
+                    )
+                    .toList(),
+                onChanged: onTypeChanged,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Person',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: selectedMainCategory.isNotEmpty()
-                          ? onSubCategoryTap
-                          : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          border: Border.all(
-                            color: Colors.blueAccent.withOpacity(0.2),
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                ),
+                value: personInput.isEmpty ? null : personInput,
+                items: personOptions
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p.personId,
                         child: Row(
                           children: [
-                            Icon(Icons.label, color: Colors.blueAccent, size: 18),
+                            Icon(p.icon.icon, color: p.color, size: 16),
                             const SizedBox(width: 8),
-                            Text(
-                              selectedSubCategory.isNotEmpty()
-                                  ? selectedSubCategory.name
-                                  : 'Sub Category',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text(p.name),
                           ],
                         ),
                       ),
-                    ),
-                  ),
-                ],
+                    )
+                    .toList(),
+                onChanged: onPersonChanged,
               ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onChanged: onBudgetChanged,
-                    controller: budgetController,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
-                    ),
-                  ),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add'),
-                  onPressed: canAdd ? onAdd : null,
-                ),
-              ],
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 16),
+        if (selectedType != '1' && selectedType != '2' && selectedType != '')
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              GestureDetector(
+                onTap: onMainCategoryTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    border: Border.all(
+                      color: Colors.blueAccent.withOpacity(0.2),
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        selectedMainCategory.isNotEmpty()
+                            ? selectedMainCategory.icon.icon
+                            : Icons.category,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        selectedMainCategory.isNotEmpty()
+                            ? selectedMainCategory.name
+                            : 'Main Category',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: selectedMainCategory.isNotEmpty()
+                    ? onSubCategoryTap
+                    : null,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    border: Border.all(
+                      color: Colors.blueAccent.withOpacity(0.2),
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(selectedSubCategory.isNotEmpty()
+                          ? selectedSubCategory.icon.icon
+                          : Icons.label,
+                        color: Theme.of(context).colorScheme.secondary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        selectedSubCategory.isNotEmpty()
+                            ? selectedSubCategory.name
+                            : 'Sub Category',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onChanged: onBudgetChanged,
+                controller: budgetController,
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
+              onPressed: canAdd ? onAdd : null,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
