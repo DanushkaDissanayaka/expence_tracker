@@ -89,7 +89,8 @@ class BudgetList extends StatelessWidget {
               title: income.name,
               budgets: incomeBudgets,
               color: income.color,
-              backgroundColor: const Color(0xFFF0FDF4),
+              backgroundColor: income.color.withValues(alpha: .1),
+              icon: income.icon.icon
             ),
           
           // Savings Section  
@@ -98,7 +99,8 @@ class BudgetList extends StatelessWidget {
               title: saving.name,
               budgets: savingBudgets,
               color: saving.color,
-              backgroundColor: const Color(0xFFFFF7ED),
+              backgroundColor: saving.color.withValues(alpha: .1),
+              icon: saving.icon.icon
             ),
 
           // Expense Categories
@@ -112,7 +114,8 @@ class BudgetList extends StatelessWidget {
               title: mainCat.parent.name,
               budgets: categoryBudgets,
               color: expenses.color,
-              backgroundColor: const Color(0xFFFEF2F2),
+              backgroundColor: expenses.color.withValues(alpha: .1),
+              icon: mainCat.parent.icon.icon
             );
           }),
         ],
@@ -125,6 +128,7 @@ class BudgetList extends StatelessWidget {
     required List<Budget> budgets,
     required Color color,
     required Color backgroundColor,
+    IconData? icon
   }) {
     final total = budgets.fold<double>(0, (sum, budget) => sum + budget.amount);
     
@@ -156,9 +160,7 @@ class BudgetList extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
-                    title == 'Income' ? Icons.trending_up : 
-                    title == 'Savings' ? Icons.savings_outlined :
-                    Icons.shopping_cart_outlined,
+                    icon ?? Icons.shopping_cart_outlined,
                     size: 16,
                     color: Colors.white,
                   ),

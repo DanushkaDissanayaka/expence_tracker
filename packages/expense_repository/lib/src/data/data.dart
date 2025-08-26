@@ -20,21 +20,21 @@ List<Person> persons = [
 BudgetType saving = BudgetType(
   budgetTypeId: '1',
   name: 'Saving',
-  icon: const Icon(FontAwesomeIcons.piggyBank),
+  icon: const Icon(Icons.savings_outlined),
   color: Color(0xFFF59E0B),
 );
 
 BudgetType income = BudgetType(
   budgetTypeId: '2',
   name: 'Income',
-  icon: const Icon(FontAwesomeIcons.wallet),
+  icon: const Icon(Icons.trending_up),
   color: Color(0xFF10B981),
 );
 
 BudgetType expenses = BudgetType(
   budgetTypeId: '3',
   name: 'Expenses',
-  icon: const Icon(FontAwesomeIcons.dollarSign),
+  icon: const Icon(Icons.trending_down),
   color: Color(0xFFEF4444),
 );
 

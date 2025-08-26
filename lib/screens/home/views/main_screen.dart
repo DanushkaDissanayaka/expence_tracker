@@ -86,22 +86,6 @@ class _MainScreenState extends State<MainScreen> {
                           MaterialPageRoute(
                             builder: (context) => MultiBlocProvider(
                               providers: [
-                                BlocProvider(create: (context) => CreateBudgetPlanBloc(FirebaseBudgetRepository())),
-                              ],
-                              child: const BudgetPlanScreen(),
-                            ),
-                          ),
-                        );
-                      },
-                      icon: Icon(Icons.account_balance_wallet), // Budget icon
-                      tooltip: 'Budget Plan',
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => MultiBlocProvider(
-                              providers: [
                                 BlocProvider(create: (context) =>  GetBudgetPlansBloc(FirebaseBudgetRepository())..add(const GetBudgetPlans())),
                                 BlocProvider(create: (context) => CreateBudgetPlanBloc(FirebaseBudgetRepository())),
                               ],
