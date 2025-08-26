@@ -165,43 +165,45 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () async {
-                              final now = DateTime.now();
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedMonth,
-                                firstDate: DateTime(now.year, now.month),
-                                lastDate: DateTime(now.year + 5, 12),
-                                helpText: 'Select Month',
-                                fieldHintText: 'Month/Year',
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: Theme.of(context).copyWith(
-                                      colorScheme: const ColorScheme.light(
-                                        primary: Color(0xFF3B82F6),
-                                        onPrimary: Colors.white,
-                                        onSurface: Color(0xFF2D3748),
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (picked != null && 
-                                  (picked.year > now.year || 
-                                   (picked.year == now.year && picked.month >= now.month))) {
-                                setState(() {
-                                  selectedMonth = DateTime(picked.year, picked.month);
-                                });
-                              }
-                            },
+                            onTap: widget.initialPlan != null
+                                ? null
+                                : () async {
+                                    final now = DateTime.now();
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: selectedMonth,
+                                      firstDate: DateTime(now.year, now.month),
+                                      lastDate: DateTime(now.year + 5, 12),
+                                      helpText: 'Select Month',
+                                      fieldHintText: 'Month/Year',
+                                      builder: (context, child) {
+                                        return Theme(
+                                          data: Theme.of(context).copyWith(
+                                            colorScheme: const ColorScheme.light(
+                                              primary: Color(0xFF3B82F6),
+                                              onPrimary: Colors.white,
+                                              onSurface: Color(0xFF2D3748),
+                                            ),
+                                          ),
+                                          child: child!,
+                                        );
+                                      },
+                                    );
+                                    if (picked != null && 
+                                        (picked.year > now.year || 
+                                         (picked.year == now.year && picked.month >= now.month))) {
+                                      setState(() {
+                                        selectedMonth = DateTime(picked.year, picked.month);
+                                      });
+                                    }
+                                  },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: widget.initialPlan != null ? const Color(0xFFF1F5F9) : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
@@ -210,16 +212,16 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                                 children: [
                                   Text(
                                     formattedMonth,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF2D3748),
+                                      color: widget.initialPlan != null ? const Color(0xFF94A3B8) : const Color(0xFF2D3748),
                                     ),
                                   ),
-                                  const Icon(
+                                  Icon(
                                     Icons.keyboard_arrow_down,
                                     size: 20,
-                                    color: Color(0xFF64748B),
+                                    color: widget.initialPlan != null ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                   ),
                                 ],
                               ),
@@ -320,7 +322,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                             onPressed: budgetList.isNotEmpty
                                 ? () {
                                     BudgetPlan newPlan = BudgetPlan(
-                                      budgetPlanId: widget.initialPlan?.budgetPlanId ?? const Uuid().v1(),
+                                      budgetPlanId: widget.initialPlan?.budgetPlanId ?? '',
                                       month: selectedMonth.month,
                                       year: selectedMonth.year,
                                       budgetPlan: budgetList,

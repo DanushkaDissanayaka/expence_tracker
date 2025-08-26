@@ -3,7 +3,7 @@ import 'package:expenses_repository/expense_repository.dart';
 import 'package:expenses_repository/src/entities/entities.dart';
 
 class BudgetPlan {
-  final String budgetPlanId;
+  String budgetPlanId;
   final int month;
   final int year;
   final List<Budget> budgetPlan;

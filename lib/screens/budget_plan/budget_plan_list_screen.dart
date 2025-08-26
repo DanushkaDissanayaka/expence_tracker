@@ -3,6 +3,7 @@ import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'blocs/get_budget_plans_bloc/get_budget_plans_bloc.dart';
 import 'blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'budget_plan_screen.dart';
@@ -37,14 +38,14 @@ class BudgetPlanListScreen extends StatelessWidget {
               itemCount: plans.length,
               itemBuilder: (context, index) {
                 final plan = plans[index];
-                final totalAmount = plan.budgetPlan.fold<double>(0, (sum, item) => sum + item.amount);
                 final totalExpenses = getExpenseTotal(plan.budgetPlan, null);
                 final totalIncome = getIncomeTotal(plan.budgetPlan, null);
                 final totalSavings = getSavingTotal(plan.budgetPlan, null);
+                final month = DateFormat('MMMM').format(DateTime(0, plan.month));
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
-                    title: Text('Month: ${plan.month}, Year: ${plan.year}'),
+                    title: Text('$month, ${plan.year}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

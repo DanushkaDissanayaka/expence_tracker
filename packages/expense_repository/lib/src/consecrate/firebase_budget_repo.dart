@@ -12,9 +12,24 @@ class FirebaseBudgetRepository implements BudgetRepository {
   @override
   Future<void> createBudgetPlan(BudgetPlan budgetPlan) async {
     try {
+      if(budgetPlan.budgetPlanId.isEmpty){
+        // check if the budget plan for this month exist
+        final existingPlan = await budgetPlanCollection
+            .where('month', isEqualTo: budgetPlan.month)
+            .where('year', isEqualTo: budgetPlan.year)
+            .get();
+        if (existingPlan.docs.isNotEmpty) {
+          throw Exception('Budget plan for this month already exists.');
+        } else {
+          // generate a new id
+          budgetPlan.budgetPlanId = budgetPlanCollection.doc().id;
+        }
+      }
+      final budgetPlanDoc = budgetPlan.toEntity().toDocument();
+
       await budgetPlanCollection
           .doc(budgetPlan.budgetPlanId)
-          .set(budgetPlan.toEntity().toDocument());
+          .set(budgetPlanDoc);
     } catch (e) {
       log(e.toString());
       rethrow;
