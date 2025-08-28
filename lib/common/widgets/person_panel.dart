@@ -1,20 +1,15 @@
+import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 
-class AccountPanel extends StatelessWidget {
-  const AccountPanel({super.key, required this.onPick, required this.onClose});
+class PersonPanel extends StatelessWidget {
+  const PersonPanel({super.key, required this.onPick, required this.onClose});
 
-  final ValueChanged<String> onPick;
+  final ValueChanged<Person> onPick;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    final accounts = const [
-      ("Cash", Icons.payments_outlined, "Physical cash payments"),
-      ("Bank Account", Icons.account_balance_outlined, "Bank transfers & payments"),
-      ("Credit Card", Icons.credit_card, "Credit card transactions"),
-      ("Debit Card", Icons.payment, "Debit card transactions"),
-    ];
-
+    final personsOptions = persons;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -70,12 +65,12 @@ class AccountPanel extends StatelessWidget {
           ListView.separated(
             shrinkWrap: true,
             padding: const EdgeInsets.all(16),
-            itemCount: accounts.length,
+            itemCount: personsOptions.length,
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
-              final account = accounts[index];
+              final person = personsOptions[index];
               return GestureDetector(
-                onTap: () => onPick(account.$1),
+                onTap: () => onPick(person),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -99,7 +94,7 @@ class AccountPanel extends StatelessWidget {
                           ],
                         ),
                         child: Icon(
-                          account.$2, 
+                          person.icon.icon,
                           size: 18,
                           color: Colors.grey.shade700,
                         ),
@@ -110,7 +105,7 @@ class AccountPanel extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              account.$1, 
+                              person.name,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -119,7 +114,7 @@ class AccountPanel extends StatelessWidget {
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              account.$3,
+                              person.name,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade600,

@@ -293,26 +293,6 @@ class _MainScreenState extends State<MainScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              color: Color(
-                                                expenses[i].category.color,
-                                              ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                          Image.asset(
-                                            'assets/${expenses[i].category.icon}',
-                                            scale: 2,
-                                            color: Colors.white,
-                                          ),
-                                        ],
-                                      ),
                                       SizedBox(width: 12.0),
                                       Text(
                                         expenses[i].category.name,

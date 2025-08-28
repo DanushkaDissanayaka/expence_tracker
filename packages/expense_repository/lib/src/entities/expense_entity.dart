@@ -4,32 +4,44 @@ import 'package:expenses_repository/src/entities/category_entity.dart';
 
 class ExpenseEntity {
   String expenseId;
-  Category category;
+  String categoryId;
   DateTime date;
+  String budgetTypeId;
   int amount;
+  String personId;
+  String note;
 
   ExpenseEntity({
     required this.expenseId,
-    required this.category,
+    required this.categoryId,
     required this.date,
     required this.amount,
+    required this.budgetTypeId,
+    required this.personId,
+    required this.note,
   });
 
   Map<String, dynamic> toDocument() {
     return {
       'id': expenseId,
-      'category': category.toEntity().toDocument(),
+      'categoryId': categoryId,
       'date': date,
       'amount': amount,
+      'budgetTypeId': budgetTypeId,
+      'personId': personId,
+      'note': note,
     };
   }
 
   static ExpenseEntity fromDocument(Map<String, dynamic> json) {
     return ExpenseEntity(
       expenseId: json['id'],
-      category: Category.fromEntity(CategoryEntity.fromDocument(json['category'])),
+      categoryId: json['categoryId'],
       date: (json['date'] as Timestamp).toDate(),
       amount: json['amount'],
+      budgetTypeId: json['budgetTypeId'],
+      personId: json['personId'],
+      note: json['note'],
     );
   }
 }

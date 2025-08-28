@@ -7,12 +7,14 @@ class FormRow extends StatelessWidget {
     required this.value,
     required this.selected,
     required this.onTap,
+    required this.color,
   });
 
   final String label;
   final String value;
   final bool selected;
   final VoidCallback onTap;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class FormRow extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: selected ? Theme.of(context).colorScheme.primary : Colors.white12,
+              color: selected ? color.withValues(alpha: .7) : Colors.white12,
               width: selected ? 1.6 : 1.0,
             ),
           ),

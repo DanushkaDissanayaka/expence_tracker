@@ -1,7 +1,7 @@
 import 'package:expenses_repository/expense_repository.dart';
 
 class TotalExpense {
-  final Category category;
+  final SubCategory category;
   final List<Expense> expenses;
   final int totalAmount;
   final DateTime lastTransactionDate;

@@ -1,80 +1,151 @@
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
-import 'panel_header.dart';
 
 class CategoryPanel extends StatelessWidget {
   const CategoryPanel({super.key, required this.onPick, required this.onClose});
 
-  final ValueChanged<String> onPick;
+  final ValueChanged<SubCategory> onPick;
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
       final categories = getCategories();
-      final keyColor = Theme.of(context).colorScheme.surfaceDim;
-      final textColor = Theme.of(context).colorScheme.onSurface;
 
-      return Material(
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const PanelHeader(title: "Category"),
-            Container(height: 1, color: Colors.black.withAlpha(0x0D)),
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Select Category",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: onClose,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.grey.shade600,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 1,
+              color: Colors.grey.shade200,
+            ),
             SizedBox(
-              height: 260,
-              child: ListView.separated(
-                padding: const EdgeInsets.all(8),
+              height: 280,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
                 itemCount: categories.length,
-                separatorBuilder: (_, __) => Divider(thickness: 1, color: Colors.black.withAlpha(0x1A)),
                 itemBuilder: (context, idx) {
                   final parentName = categories[idx].parent.name;
                   final children = categories[idx].children;
                   final parentIcon = categories[idx].parent.icon.icon;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(parentIcon, color:Theme.of(context).colorScheme.outline, size: 10),
-                          const SizedBox(width: 8),
-                          Text(parentName, 
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color:Theme.of(context).colorScheme.outline)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: children.map((cat) {
-                          final icon = cat.icon.icon;
-                          final label = cat.name;
-                          return InkWell(
-                            onTap: () => onPick(label),
-                            child: Container(
-                              width: 60,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: keyColor,
-                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(icon, color: textColor, size: 16),
-                                  const SizedBox(height: 4),
-                                  Text(label, style: const TextStyle(fontSize: 9)),
-                                ],
+                              child: Icon(
+                                parentIcon, 
+                                color: Colors.grey.shade600, 
+                                size: 12,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                            const SizedBox(width: 10),
+                            Text(
+                              parentName, 
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600, 
+                                fontSize: 13, 
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: children.map((cat) {
+                            final icon = cat.icon.icon;
+                            final label = cat.name;
+                            return GestureDetector(
+                              onTap: () => onPick(cat),
+                              child: Container(
+                                width: 65,
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(icon, color: Colors.grey.shade700, size: 16),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      label, 
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
           ],
         ),
       );

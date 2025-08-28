@@ -1,5 +1,4 @@
 import 'package:expenses_repository/expense_repository.dart';
-import 'package:expenses_repository/src/data/data.dart';
 import 'package:expenses_repository/src/entities/entities.dart';
 
 class Budget {
