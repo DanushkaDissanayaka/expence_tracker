@@ -12,7 +12,9 @@ import 'segmented.dart';
 enum FocusField { none, amount, category, account, person }
 
 class ExpenseEntryScreen extends StatefulWidget {
-  const ExpenseEntryScreen({super.key});
+  final Expense? existingExpense; // Add optional existing expense parameter
+  
+  const ExpenseEntryScreen({super.key, this.existingExpense});
 
   @override
   State<ExpenseEntryScreen> createState() => _ExpenseEntryScreenState();
@@ -20,6 +22,7 @@ class ExpenseEntryScreen extends StatefulWidget {
 
 class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
   final FocusNode noteFocusNode = FocusNode();
+  final TextEditingController noteController = TextEditingController();
   BudgetType selectedBudgetType = expenses;
   FocusField focus = FocusField.none;
   bool isLoading = false;
@@ -51,8 +54,29 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
   @override
   void initState() {
     super.initState();
-    expense = Expense.empty;
-    expense.expenseId = const Uuid().v1();
+    
+    if (widget.existingExpense != null) {
+      // Editing existing expense
+      expense = widget.existingExpense!;
+      selectedBudgetType = expense.budgetType;
+      amount = expense.amount.toString();
+      category = expense.category;
+      note = expense.note;
+      noteController.text = expense.note; // Set the controller text
+      selectedDateTime = expense.date;
+      person = expense.person;
+    } else {
+      // Creating new expense
+      expense = Expense.empty;
+      expense.expenseId = const Uuid().v1();
+    }
+  }
+
+  @override
+  void dispose() {
+    noteController.dispose();
+    noteFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _pickDate() async {
@@ -124,7 +148,12 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
     expense.category = category;
     expense.note = note;
     expense.person = person;
-    context.read<CreateExpenseBloc>().add(CreateExpense(expense));
+    
+    if (widget.existingExpense != null) {
+      context.read<CreateExpenseBloc>().add(UpdateExpense(expense));
+    } else {
+      context.read<CreateExpenseBloc>().add(CreateExpense(expense));
+    }
     // Navigate back or show success message
     Navigator.pop(context);
   }
@@ -238,7 +267,9 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Add ${selectedBudgetType.name}",
+          widget.existingExpense != null 
+              ? "Edit ${selectedBudgetType.name}"
+              : "Add ${selectedBudgetType.name}",
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -319,11 +350,17 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                       id: selectedBudgetType.budgetTypeId,
                       onChanged: (b) => setState(() {
                         selectedBudgetType = b;
-                        // Clear category when switching away from expenses
-                        if (b != expenses) category = SubCategory.empty();
+                        // Clear category when switching away from expenses (only for new expenses)
+                        if (b != expenses && widget.existingExpense == null) {
+                          category = SubCategory.empty();
+                        }
                         _setFocus(FocusField.none); // Hide any open panels
-                        amount = ''; // Clear amount when switching type
-                        note = ''; // Clear note when switching type
+                        // Only clear amount and note for new expenses
+                        if (widget.existingExpense == null) {
+                          amount = '';
+                          note = '';
+                          noteController.clear();
+                        }
                       }),
                     ),
                     const SizedBox(height: 16),
@@ -408,6 +445,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                               }
                             },
                             child: TextField(
+                              controller: noteController,
                               focusNode: noteFocusNode,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w500,
@@ -471,7 +509,9 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                     elevation: 0,
                   ),
                   child: Text(
-                    "Save ${selectedBudgetType.name}",
+                    widget.existingExpense != null 
+                        ? "Update ${selectedBudgetType.name}"
+                        : "Save ${selectedBudgetType.name}",
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

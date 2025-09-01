@@ -1,6 +1,8 @@
+import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_expense_bloc.dart';
 import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:expense_tracker/screens/home/views/main_screen.dart';
 import 'package:expense_tracker/screens/stats/stat_screen.dart';
+import 'package:expense_tracker/view_expenses/blocs/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/screens/home/widgets/home_bottom_nav_bar.dart';
@@ -22,8 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<GetTotalExpensesBloc>(
-      create: (context) => GetTotalExpensesBloc(FirebaseExpenseRepo()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<GetTotalExpensesBloc>(
+          create: (context) => GetTotalExpensesBloc(FirebaseExpenseRepo()),
+        ),
+        BlocProvider(create: (context) => GetExpensesByCategoryBloc(FirebaseExpenseRepo())),
+        BlocProvider(create: (context) => CreateExpenseBloc(FirebaseExpenseRepo())),
+      ],
       child: Scaffold(
         bottomNavigationBar: HomeBottomNavBar(
           currentIndex: _index,

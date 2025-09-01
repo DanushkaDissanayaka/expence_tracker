@@ -17,5 +17,25 @@ class CreateExpenseBloc extends Bloc<CreateExpenseEvent, CreateExpenseState> {
         emit(CreateExpenseFailure(e.toString()));
       }
     });
+    
+    on<UpdateExpense>((event, emit) async {
+      emit(CreateExpenseLoading());
+      try {
+        await expenseRepository.updateExpense(event.expense);
+        emit(CreateExpenseSuccess());
+      } catch (e) {
+        emit(CreateExpenseFailure(e.toString()));
+      }
+    });
+
+    on<DeleteExpense>((event, emit) async {
+      emit(CreateExpenseLoading());
+      try {
+        await expenseRepository.deleteExpense(event.expenseId);
+        emit(CreateExpenseSuccess());
+      } catch (e) {
+        emit(CreateExpenseFailure(e.toString()));
+      }
+    });
   }
 }

@@ -74,6 +74,44 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       rethrow;
     }
   }
+  
+  /// Returns a list of expenses for a given categoryId.
+  @override
+  Future<List<Expense>> getExpensesByCategory(String categoryId) async {
+      try {
+        final querySnapshot = await expenseCollection
+            .where('categoryId', isEqualTo: categoryId)
+            .get();
+        return querySnapshot.docs
+            .map((doc) => Expense.fromEntity(ExpenseEntity.fromDocument(doc.data())))
+            .toList();
+      } catch (e) {
+        log(e.toString());
+        rethrow;
+      }
+    }
+
+  @override
+  Future<void> updateExpense(Expense expense) async {
+    try {
+      await expenseCollection
+          .doc(expense.expenseId)
+          .update(expense.toEntity().toDocument());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      await expenseCollection.doc(expenseId).delete();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 
   @override
   Future<void> createCategory(Category category) async {
@@ -112,6 +150,8 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       rethrow;
     }
   }
+
+
 
   @override
   Future<void> createExpense(Expense expense) async {

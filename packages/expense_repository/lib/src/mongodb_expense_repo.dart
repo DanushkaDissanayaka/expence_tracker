@@ -27,10 +27,28 @@ class MongoExpenseRepo implements ExpenseRepository {
     // TODO: implement createExpense
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> updateExpense(Expense expense) {
+    // TODO: implement updateExpense
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteExpense(String expenseId) {
+    // TODO: implement deleteExpense
+    throw UnimplementedError();
+  }
   
   @override
   Future<List<Expense>> getExpenses() {
     // TODO: implement getExpenses
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Expense>> getExpensesByCategory(String categoryId) {
+    // TODO: implement getExpensesByCategory
     throw UnimplementedError();
   }
 }

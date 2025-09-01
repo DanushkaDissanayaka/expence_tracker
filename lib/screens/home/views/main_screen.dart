@@ -1,7 +1,10 @@
+import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_expense_bloc.dart';
 import 'package:expense_tracker/screens/budget_plan/blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'package:expense_tracker/screens/budget_plan/blocs/get_budget_plans_bloc/get_budget_plans_bloc.dart';
 import 'package:expense_tracker/screens/budget_plan/budget_plan_list_screen.dart';
 import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
+import 'package:expense_tracker/view_expenses/blocs/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
+import 'package:expense_tracker/view_expenses/screens/view_expenses_by_category.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -106,8 +109,15 @@ class _MainScreenState extends State<MainScreen> {
                 MaterialPageRoute(
                   builder: (context) => MultiBlocProvider(
                     providers: [
-                      BlocProvider(create: (context) =>  GetBudgetPlansBloc(FirebaseBudgetRepository())..add(const GetBudgetPlans())),
-                      BlocProvider(create: (context) => CreateBudgetPlanBloc(FirebaseBudgetRepository())),
+                      BlocProvider(
+                        create: (context) =>
+                            GetBudgetPlansBloc(FirebaseBudgetRepository())
+                              ..add(const GetBudgetPlans()),
+                      ),
+                      BlocProvider(
+                        create: (context) =>
+                            CreateBudgetPlanBloc(FirebaseBudgetRepository()),
+                      ),
                     ],
                     child: const BudgetPlanListScreen(),
                   ),
@@ -180,7 +190,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildBalanceItem(String title, String amount, IconData icon, Color color) {
+  Widget _buildBalanceItem(
+    String title,
+    String amount,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -192,11 +207,7 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: 16,
-              ),
+              Icon(icon, color: color, size: 16),
               const SizedBox(width: 6),
               Text(
                 title,
@@ -284,61 +295,87 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildTransactionItem(TotalExpense expense) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              expense.category.isNotEmpty() ? expense.category.icon.icon : income.icon.icon,
-              color: expense.budgetType.color,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  expense.category.name.isEmpty ? (expense.expenses.first.note.isEmpty ? income.name : expense.expenses.first.note) : expense.category.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  expense.lastTransactionDate.toLocal().toString().split(' ')[0],
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
-                  ),
-                ),
+    return GestureDetector(
+      onTap: () {
+        final getExpensesByCategoryBloc =
+            BlocProvider.of<GetExpensesByCategoryBloc>(context);
+        final createExpenseBloc = BlocProvider.of<CreateExpenseBloc>(context);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: getExpensesByCategoryBloc),
+                BlocProvider.value(value: createExpenseBloc),
               ],
+              child: ViewExpensesByCategory(totalExpense: expense),
             ),
           ),
-          Text(
-            'Rs. ${expense.totalAmount}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1F2937),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                expense.category.isNotEmpty()
+                    ? expense.category.icon.icon
+                    : income.icon.icon,
+                color: expense.budgetType.color,
+                size: 20,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    expense.category.name.isEmpty
+                        ? (expense.expenses.first.note.isEmpty
+                              ? income.name
+                              : expense.expenses.first.note)
+                        : expense.category.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    expense.lastTransactionDate.toLocal().toString().split(
+                      ' ',
+                    )[0],
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'Rs. ${expense.totalAmount}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -373,10 +410,7 @@ class _MainScreenState extends State<MainScreen> {
           const SizedBox(height: 8),
           Text(
             'Your recent transactions will appear here',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -413,10 +447,7 @@ class _MainScreenState extends State<MainScreen> {
           const SizedBox(height: 8),
           Text(
             'Please try again later',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
