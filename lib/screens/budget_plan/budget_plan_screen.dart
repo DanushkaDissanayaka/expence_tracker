@@ -1,4 +1,4 @@
-import 'package:expense_tracker/screens/budget_plan/blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
+import 'package:expense_tracker/blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

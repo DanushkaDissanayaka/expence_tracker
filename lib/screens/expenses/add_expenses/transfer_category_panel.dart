@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:expense_tracker/common/widgets/panel_header.dart';
+import 'package:expense_tracker/screens/common/widgets/panel_header.dart';
 
 class TransferCategoryPanel extends StatelessWidget {
   const TransferCategoryPanel({super.key, required this.onPick, required this.onClose});

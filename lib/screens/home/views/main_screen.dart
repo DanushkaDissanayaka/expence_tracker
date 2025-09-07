@@ -1,15 +1,15 @@
-import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_expense_bloc.dart';
-import 'package:expense_tracker/screens/budget_plan/blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
-import 'package:expense_tracker/screens/budget_plan/blocs/get_budget_plans_bloc/get_budget_plans_bloc.dart';
+import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
+import 'package:expense_tracker/blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
+import 'package:expense_tracker/blocs/budget/get_budget_plans_bloc/get_budget_plans_bloc.dart';
 import 'package:expense_tracker/screens/budget_plan/budget_plan_list_screen.dart';
-import 'package:expense_tracker/screens/home/blocs/get_total_expensesbloc/get_total_expenses_bloc.dart';
-import 'package:expense_tracker/view_expenses/blocs/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
-import 'package:expense_tracker/view_expenses/screens/view_expenses_by_category.dart';
+import 'package:expense_tracker/blocs/expense/get_total_expensesbloc/get_total_expenses_bloc.dart';
+import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
+import 'package:expense_tracker/screens/expenses/view_expenses/view_expenses_by_category.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/get_expensesbloc/get_expenses_bloc.dart';
+import '../../../blocs/expense/get_expensesbloc/get_expenses_bloc.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

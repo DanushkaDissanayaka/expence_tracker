@@ -1,7 +1,7 @@
-import 'package:expense_tracker/add_expenses/blocs/create_expensebloc/create_expense_bloc.dart';
-import 'package:expense_tracker/add_expenses/views/expense_entry_screen.dart';
+import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
+import 'package:expense_tracker/screens/expenses/add_expenses/expense_entry_screen.dart';
 import 'package:expense_tracker/common/helper/formater_heper.dart';
-import 'package:expense_tracker/view_expenses/blocs/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
+import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

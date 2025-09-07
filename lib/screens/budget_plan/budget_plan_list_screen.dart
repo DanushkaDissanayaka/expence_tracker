@@ -4,8 +4,8 @@ import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'blocs/get_budget_plans_bloc/get_budget_plans_bloc.dart';
-import 'blocs/create_budget_plan_bloc/create_budget_plan_bloc.dart';
+import '../../blocs/budget/get_budget_plans_bloc/get_budget_plans_bloc.dart';
+import '../../blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'budget_plan_screen.dart';
 
 class BudgetPlanListScreen extends StatelessWidget {
