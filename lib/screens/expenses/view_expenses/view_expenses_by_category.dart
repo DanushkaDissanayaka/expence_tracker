@@ -1,4 +1,5 @@
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
+import 'package:expense_tracker/blocs/expense/delete_expense_bloc/delete_expense_bloc.dart';
 import 'package:expense_tracker/screens/expenses/add_expenses/expense_entry_screen.dart';
 import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
@@ -390,7 +391,7 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
             ),
             TextButton(
               onPressed: () {
-                context.read<CreateExpenseBloc>().add(
+                context.read<DeleteExpenseBloc>().add(
                   DeleteExpense(expense.expenseId),
                 );
                 Navigator.of(dialogContext).pop();

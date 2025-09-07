@@ -1,4 +1,5 @@
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
+import 'package:expense_tracker/blocs/expense/update_expense_bloc/update_expense_bloc.dart';
 import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expense_tracker/screens/common/widgets/category_panel.dart';
 import 'package:expense_tracker/screens/common/widgets/person_panel.dart';
@@ -150,7 +151,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
     expense.person = person;
     
     if (widget.existingExpense != null) {
-      context.read<CreateExpenseBloc>().add(UpdateExpense(expense));
+      context.read<UpdateExpenseBloc>().add(UpdateExpense(expense));
     } else {
       context.read<CreateExpenseBloc>().add(CreateExpense(expense));
     }

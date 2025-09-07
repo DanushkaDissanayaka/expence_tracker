@@ -56,6 +56,24 @@ class NumberPad extends StatelessWidget {
                     color: Colors.black87,
                   ),
                 ),
+                TextButton(
+                  onPressed: onDone,
+                  style: TextButton.styleFrom(
+                    backgroundColor: doneColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "DONE",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
