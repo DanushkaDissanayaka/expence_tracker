@@ -1,5 +1,8 @@
+import 'package:expense_tracker/blocs/balance/get_balance_summary_bloc/get_balance_summary_bloc.dart';
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
+import 'package:expense_tracker/blocs/expense/delete_expense_bloc/delete_expense_bloc.dart';
 import 'package:expense_tracker/blocs/expense/get_total_expensesbloc/get_total_expenses_bloc.dart';
+import 'package:expense_tracker/blocs/expense/update_expense_bloc/update_expense_bloc.dart';
 import 'package:expense_tracker/screens/home/views/main_screen.dart';
 import 'package:expense_tracker/screens/stats/stat_screen.dart';
 import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
@@ -31,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         BlocProvider(create: (context) => GetExpensesByCategoryBloc(FirebaseExpenseRepo())),
         BlocProvider(create: (context) => CreateExpenseBloc(FirebaseExpenseRepo())),
+        BlocProvider(create: (context) => UpdateExpenseBloc(FirebaseExpenseRepo())),
+        BlocProvider(create: (context) => DeleteExpenseBloc(FirebaseExpenseRepo())),
+        BlocProvider(create: (context) => GetBalanceSummaryBloc(FirebaseBalanceRepo())),
       ],
       child: Scaffold(
         bottomNavigationBar: HomeBottomNavBar(

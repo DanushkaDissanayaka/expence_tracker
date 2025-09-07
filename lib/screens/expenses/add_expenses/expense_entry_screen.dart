@@ -133,16 +133,6 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
       );
       return;
     }
-
-    // Log all values to the console
-    // print('--- Expense Entry ---');
-    // print('Type: ${selectedBudgetType.name}');
-    // print('Date: $formattedDate');
-    // print('Amount: $amount');
-    // print('Category: $category');
-    // print('Account: $account');
-    // print('Note: $note');
-    // print('---------------------');
     expense.budgetType = selectedBudgetType;
     expense.date = selectedDateTime;
     expense.amount = (double.tryParse(amount) ?? 0).toInt();
@@ -152,11 +142,11 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
     
     if (widget.existingExpense != null) {
       context.read<UpdateExpenseBloc>().add(UpdateExpense(expense));
+      Navigator.pop(context);
     } else {
       context.read<CreateExpenseBloc>().add(CreateExpense(expense));
+      Navigator.pop(context);
     }
-    // Navigate back or show success message
-    Navigator.pop(context);
   }
 
   Widget _buildFormField({
@@ -177,7 +167,6 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
           setState(() {
             isLoading = false;
           });
-          Navigator.pop(context);
         } else if (state is CreateExpenseFailure) {
           setState(() {
             isLoading = false;

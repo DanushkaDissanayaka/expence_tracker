@@ -1,6 +1,13 @@
+
+import 'dart:developer';
+
+import 'package:expense_tracker/blocs/balance/get_balance_summary_bloc/get_balance_summary_bloc.dart';
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
 import 'package:expense_tracker/blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'package:expense_tracker/blocs/budget/get_budget_plans_bloc/get_budget_plans_bloc.dart';
+import 'package:expense_tracker/blocs/expense/delete_expense_bloc/delete_expense_bloc.dart';
+import 'package:expense_tracker/blocs/expense/update_expense_bloc/update_expense_bloc.dart';
+import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expense_tracker/screens/budget_plan/budget_plan_list_screen.dart';
 import 'package:expense_tracker/blocs/expense/get_total_expensesbloc/get_total_expenses_bloc.dart';
 import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
@@ -24,6 +31,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     // Fetch expenses when screen loads
     context.read<GetTotalExpensesBloc>().add(GetTotalExpenses());
+    // Fetch balance summary when screen loads
+    context.read<GetBalanceSummaryBloc>().add(const GetBalanceSummary());
   }
 
   @override
@@ -86,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'John Doe',
+                  'Shawn/Sam',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -136,64 +145,75 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBalanceCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF6366F1), // Flat primary color
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'Total Balance',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFDDD6FE), // Light purple
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Rs. 1,000,000',
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _buildBalanceItem(
-                  'Income',
-                  'Rs. 500,000',
-                  CupertinoIcons.arrow_down_right,
-                  const Color(0xFF10B981), // Green
-                ),
+    return BlocBuilder<GetBalanceSummaryBloc, GetBalanceSummaryState>(
+      builder: (context, state) {
+        if (state is GetBalanceSummaryLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is GetBalanceSummarySuccess) {
+          return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1), // Flat primary color
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildBalanceItem(
-                  'Expenses',
-                  'Rs. 500,000',
-                  CupertinoIcons.arrow_up_right,
-                  const Color(0xFFEF4444), // Red
-                ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Balance',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFDDD6FE), // Light purple
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    formatToCurrency(state.balanceSummary.availableExpenseBalance),
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildBalanceItem(
+                          'Savings',
+                          formatToCurrency(state.balanceSummary.totalSavings),
+                          saving.icon.icon,
+                          saving.color, // Green
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildBalanceItem(
+                          'Current',
+                          formatToCurrency(state.balanceSummary.currentExpenses),
+                          CupertinoIcons.arrow_up_right,
+                          expenses.color, // Red
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
-      ),
+            );
+        } else if (state is GetBalanceSummaryFailure) {
+          return Center(child: Text('Error: ${state.error}'));
+        }
+        return Container();
+      },
     );
   }
 
   Widget _buildBalanceItem(
     String title,
     String amount,
-    IconData icon,
+    IconData? icon,
     Color color,
   ) {
     return Container(
@@ -244,20 +264,7 @@ class _MainScreenState extends State<MainScreen> {
             fontWeight: FontWeight.w600,
             color: Color(0xFF1F2937),
           ),
-        ),
-        TextButton(
-          onPressed: () {
-            // TODO: Navigate to all transactions
-          },
-          child: const Text(
-            'View All',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF6366F1),
-            ),
-          ),
-        ),
+        )
       ],
     );
   }
@@ -297,20 +304,30 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildTransactionItem(TotalExpense expense) {
     return GestureDetector(
       onTap: () {
-        final getExpensesByCategoryBloc =
-            BlocProvider.of<GetExpensesByCategoryBloc>(context);
+        final getExpensesByCategoryBloc = BlocProvider.of<GetExpensesByCategoryBloc>(context);
         final createExpenseBloc = BlocProvider.of<CreateExpenseBloc>(context);
+        final deleteExpenseBloc = BlocProvider.of<DeleteExpenseBloc>(context);
+        final updateExpenseBloc = BlocProvider.of<UpdateExpenseBloc>(context);
+        final getTotalExpensesBloc = BlocProvider.of<GetTotalExpensesBloc>(context);
+        final getBalanceSummaryBloc = BlocProvider.of<GetBalanceSummaryBloc>(context);
+
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: getExpensesByCategoryBloc),
                 BlocProvider.value(value: createExpenseBloc),
+                BlocProvider.value(value: deleteExpenseBloc),
+                BlocProvider.value(value: updateExpenseBloc),
               ],
               child: ViewExpensesByCategory(totalExpense: expense),
             ),
           ),
-        );
+        ).then((_) {
+          // Refresh the total expenses when returning from the detail screen
+          getTotalExpensesBloc.add(GetTotalExpenses());
+          getBalanceSummaryBloc.add(const GetBalanceSummary());
+        });
       },
       child: Container(
         padding: const EdgeInsets.all(16),

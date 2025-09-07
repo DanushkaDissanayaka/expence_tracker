@@ -1,4 +1,3 @@
-
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:expenses_repository/src/entities/entities.dart';
 
@@ -31,5 +30,35 @@ class BudgetPlan {
       year: entity.year,
       budgetPlan: entity.budgetPlan.map((e) => Budget.fromEntity(e)).toList(),
     );
+  }
+
+  double getTotalExpense(String? personId) {
+    return budgetPlan
+        .where(
+          (b) =>
+              b.budgetType.budgetTypeId == expenses.budgetTypeId &&
+              (personId == null || b.person.personId == personId),
+        )
+        .fold(0.0, (sum, b) => sum + b.amount);
+  }
+
+  double getIncomeTotal(String? personId) {
+    return budgetPlan
+        .where(
+          (b) =>
+              b.budgetType.budgetTypeId == income.budgetTypeId &&
+              (personId == null || b.person.personId == personId),
+        )
+        .fold(0.0, (sum, b) => sum + b.amount);
+  }
+
+  double getSavingTotal(String? personId) {
+    return budgetPlan
+        .where(
+          (b) =>
+              b.budgetType.budgetTypeId == saving.budgetTypeId &&
+              (personId == null || b.person.personId == personId),
+        )
+        .fold(0.0, (sum, b) => sum + b.amount);
   }
 }

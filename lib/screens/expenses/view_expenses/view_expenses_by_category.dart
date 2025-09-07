@@ -1,5 +1,6 @@
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
 import 'package:expense_tracker/blocs/expense/delete_expense_bloc/delete_expense_bloc.dart';
+import 'package:expense_tracker/blocs/expense/update_expense_bloc/update_expense_bloc.dart';
 import 'package:expense_tracker/screens/expenses/add_expenses/expense_entry_screen.dart';
 import 'package:expense_tracker/common/helper/formater_heper.dart';
 import 'package:expense_tracker/blocs/expense/get_expenses_by_category_bloc/get_expenses_by_category_bloc.dart';
@@ -43,22 +44,43 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CreateExpenseBloc, CreateExpenseState>(
-      listener: (context, state) {
-        if (state is CreateExpenseSuccess) {
-          // Refresh the expenses list after successful create/update/delete
-          context.read<GetExpensesByCategoryBloc>().add(
-            GetExpensesByCategory(widget.totalExpense.category.categoryId),
-          );
-        } else if (state is CreateExpenseFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${state.error}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<UpdateExpenseBloc, UpdateExpenseState>(
+          listener: (context, state) {
+            if (state is UpdateExpenseSuccess) {
+              // Refresh the expenses list after successful create/update/delete
+              context.read<GetExpensesByCategoryBloc>().add(
+                GetExpensesByCategory(widget.totalExpense.category.categoryId),
+              );
+            } else if (state is UpdateExpenseFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: //${state.error}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        ),
+        BlocListener<DeleteExpenseBloc, DeleteExpenseState>(
+          listener: (context, state) {
+            if (state is DeleteExpenseSuccess) {
+              // Refresh the expenses list after successful create/update/delete
+              context.read<GetExpensesByCategoryBloc>().add(
+                GetExpensesByCategory(widget.totalExpense.category.categoryId),
+              );
+            } else if (state is DeleteExpenseFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: //${state.error}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC), // Light background
         appBar: AppBar(
@@ -67,7 +89,7 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
           scrolledUnderElevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, widget.totalExpense),
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,36 +127,38 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
           ),
           centerTitle: false,
         ),
-        body: BlocBuilder<GetExpensesByCategoryBloc, GetExpensesByCategoryState>(
-          builder: (context, state) {
-              if(state is GetExpensesByCategoryLoading) {
-                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-              } else if(state is GetExpensesByCategorySuccess) {
-                expenses = state.expenses;
-                return SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Category Summary Card
-                      _buildCategorySummaryCard(context),
-                      const SizedBox(height: 24),
-                      // Expenses List Header
-                      _buildExpensesHeader(),
-                      const SizedBox(height: 16),
-                      // Expenses List
-                      Expanded(child: _buildExpensesList()),
-                    ],
-                  ),
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
-            
-          },
-        ),
+        body:
+            BlocBuilder<GetExpensesByCategoryBloc, GetExpensesByCategoryState>(
+              builder: (context, state) {
+                if (state is GetExpensesByCategoryLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                } else if (state is GetExpensesByCategorySuccess) {
+                  expenses = state.expenses;
+                  return SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Category Summary Card
+                          _buildCategorySummaryCard(context),
+                          const SizedBox(height: 24),
+                          // Expenses List Header
+                          _buildExpensesHeader(),
+                          const SizedBox(height: 16),
+                          // Expenses List
+                          Expanded(child: _buildExpensesList()),
+                        ],
+                      ),
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
       ),
     );
   }
@@ -288,15 +312,18 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
 
   void _editExpense(Expense expense) {
     final createExpenseBloc = BlocProvider.of<CreateExpenseBloc>(context);
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(
-            builder: (context) => BlocProvider.value(
-              value: createExpenseBloc,
-              child: ExpenseEntryScreen(existingExpense: expense),
-            ),
-          ),
-        );
+    final updateExpenseBloc = BlocProvider.of<UpdateExpenseBloc>(context);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: updateExpenseBloc),
+            BlocProvider.value(value: createExpenseBloc),
+          ],
+          child: ExpenseEntryScreen(existingExpense: expense),
+        ),
+      )
+    );
   }
 
   void _showDeleteConfirmation(Expense expense) {
@@ -419,37 +446,37 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
   }
 
   Widget _buildExpensesList() {
-          if (expenses.isEmpty) {
-            return _buildEmptyState();
-          }
+    if (expenses.isEmpty) {
+      return _buildEmptyState();
+    }
 
-          // Group expenses by date
-          Map<String, List<Expense>> groupedExpenses = {};
-          for (var expense in expenses) {
-            String dateKey = DateFormat('yyyy-MM-dd').format(expense.date);
-            groupedExpenses.putIfAbsent(dateKey, () => []).add(expense);
-          }
+    // Group expenses by date
+    Map<String, List<Expense>> groupedExpenses = {};
+    for (var expense in expenses) {
+      String dateKey = DateFormat('yyyy-MM-dd').format(expense.date);
+      groupedExpenses.putIfAbsent(dateKey, () => []).add(expense);
+    }
 
-          // Sort dates in descending order
-          var sortedDates = groupedExpenses.keys.toList()
-            ..sort((a, b) => b.compareTo(a));
+    // Sort dates in descending order
+    var sortedDates = groupedExpenses.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
-          return ListView.separated(
-            itemCount: sortedDates.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 20),
-            itemBuilder: (context, index) {
-              String dateKey = sortedDates[index];
-              List<Expense> dayExpenses = groupedExpenses[dateKey]!;
+    return ListView.separated(
+      itemCount: sortedDates.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 20),
+      itemBuilder: (context, index) {
+        String dateKey = sortedDates[index];
+        List<Expense> dayExpenses = groupedExpenses[dateKey]!;
 
-              // Calculate daily total
-              int dailyTotal = dayExpenses.fold(
-                0,
-                (sum, expense) => sum + expense.amount,
-              );
+        // Calculate daily total
+        int dailyTotal = dayExpenses.fold(
+          0,
+          (sum, expense) => sum + expense.amount,
+        );
 
-              return _buildDayExpensesGroup(dateKey, dayExpenses, dailyTotal);
-            },
-          );
+        return _buildDayExpensesGroup(dateKey, dayExpenses, dailyTotal);
+      },
+    );
   }
 
   Widget _buildDayExpensesGroup(
@@ -576,7 +603,7 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
                       Text(
                         expense.person.name,
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      )
+                      ),
                     ],
                   ),
                 ],

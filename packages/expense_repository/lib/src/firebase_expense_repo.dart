@@ -14,7 +14,12 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   /// Returns a list of TotalExpense, each containing a category, its expenses, and the total amount for that category.
   Future<List<TotalExpense>> getExpensesGroupedByCategory() async {
     try {
-      final querySnapshot = await expenseCollection.get();
+      final querySnapshot = await expenseCollection
+      .where('date', isGreaterThanOrEqualTo: DateTime(DateTime.now().year, DateTime.now().month, 1))
+      .where('date', isLessThan: DateTime(DateTime.now().year, DateTime.now().month + 1, 1))
+      .get();
+
+
       final expensesAndIncome = querySnapshot.docs
           .map((doc) =>
               Expense.fromEntity(ExpenseEntity.fromDocument(doc.data())))
@@ -81,6 +86,8 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       try {
         final querySnapshot = await expenseCollection
             .where('categoryId', isEqualTo: categoryId)
+            .where('date', isGreaterThanOrEqualTo: DateTime(DateTime.now().year, DateTime.now().month, 1))
+            .where('date', isLessThan: DateTime(DateTime.now().year, DateTime.now().month + 1, 1))
             .get();
         return querySnapshot.docs
             .map((doc) => Expense.fromEntity(ExpenseEntity.fromDocument(doc.data())))
@@ -156,7 +163,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   @override
   Future<void> createExpense(Expense expense) async {
     try {
-      await expenseCollection
+      return await expenseCollection
           .doc(expense.expenseId)
           .set(expense.toEntity().toDocument());
     } catch (e) {
