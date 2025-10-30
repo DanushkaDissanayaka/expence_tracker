@@ -15,7 +15,15 @@ enum FocusField { none, amount, category, account, person, date }
 class ExpenseEntryScreen extends StatefulWidget {
   final Expense? existingExpense; // Add optional existing expense parameter
   
-  const ExpenseEntryScreen({super.key, this.existingExpense});
+  final SubCategory? initialCategory; // Initial category for new expense
+  final BudgetType? initialBudgetType; // Initial budget type for new expense
+  
+  const ExpenseEntryScreen({
+    super.key, 
+    this.existingExpense,
+    this.initialCategory,
+    this.initialBudgetType,
+  });
 
   @override
   State<ExpenseEntryScreen> createState() => _ExpenseEntryScreenState();
@@ -71,6 +79,16 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
       expense = Expense.empty;
       expense.expenseId = const Uuid().v1();
     }
+
+    // Set initial category if provided
+      if (widget.initialCategory != null) {
+        category = widget.initialCategory!;
+      }
+      
+      // Set initial budget type if provided
+      if (widget.initialBudgetType != null) {
+        selectedBudgetType = widget.initialBudgetType!;
+      }
   }
 
   @override

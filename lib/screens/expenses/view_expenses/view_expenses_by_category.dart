@@ -46,6 +46,23 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        BlocListener<CreateExpenseBloc, CreateExpenseState>(
+          listener: (context, state) {
+            if (state is CreateExpenseSuccess) {
+              // Refresh the expenses list after successful create
+              context.read<GetExpensesByCategoryBloc>().add(
+                GetExpensesByCategory(widget.totalExpense.category.categoryId),
+              );
+            } else if (state is CreateExpenseFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: //${state.error}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        ),
         BlocListener<UpdateExpenseBloc, UpdateExpenseState>(
           listener: (context, state) {
             if (state is UpdateExpenseSuccess) {
@@ -159,6 +176,39 @@ class _ViewExpensesByCategoryState extends State<ViewExpensesByCategory> {
                 }
               },
             ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _addNewExpense(),
+          backgroundColor: widget.totalExpense.budgetType.color,
+          elevation: 4,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: const Text(
+            'Add Expense',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addNewExpense() {
+    final createExpenseBloc = BlocProvider.of<CreateExpenseBloc>(context);
+    final updateExpenseBloc = BlocProvider.of<UpdateExpenseBloc>(context);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: updateExpenseBloc),
+            BlocProvider.value(value: createExpenseBloc),
+          ],
+          child: ExpenseEntryScreen(
+            initialCategory: widget.totalExpense.category,
+            initialBudgetType: widget.totalExpense.budgetType,
+          ),
+        ),
       ),
     );
   }

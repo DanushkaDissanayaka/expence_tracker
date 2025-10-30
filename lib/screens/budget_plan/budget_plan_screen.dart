@@ -2,7 +2,6 @@ import 'package:expense_tracker/blocs/budget/create_budget_plan_bloc/create_budg
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 import 'widgets/budget_input_dialog.dart';
 import 'widgets/budget_list.dart';
 
