@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses_repository/expense_repository.dart';
 import 'package:expenses_repository/src/entities/entities.dart';
+import 'package:expenses_repository/src/helpers/datetime_helper.dart';
 
 class FirebaseExpenseRepo implements ExpenseRepository {
   final categoryCollection =
@@ -13,11 +14,12 @@ class FirebaseExpenseRepo implements ExpenseRepository {
 
   /// Returns a list of TotalExpense, each containing a category, its expenses, and the total amount for that category.
   Future<List<TotalExpense>> getExpensesGroupedByCategory() async {
+    final currentBillingPeriod = DatetimeHelper.getCurrentBillingPeriod();
     try {
       final querySnapshot = await expenseCollection
-      .where('date', isGreaterThanOrEqualTo: DateTime(DateTime.now().year, DateTime.now().month, 1))
-      .where('date', isLessThan: DateTime(DateTime.now().year, DateTime.now().month + 1, 1))
-      .get();
+          .where('date', isGreaterThanOrEqualTo: currentBillingPeriod.start)
+          .where('date', isLessThan: currentBillingPeriod.end)
+          .get();
 
 
       final expensesAndIncome = querySnapshot.docs
@@ -84,10 +86,11 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   @override
   Future<List<Expense>> getExpensesByCategory(String categoryId) async {
       try {
+        final currentBillingPeriod = DatetimeHelper.getCurrentBillingPeriod();
         final querySnapshot = await expenseCollection
             .where('categoryId', isEqualTo: categoryId)
-            .where('date', isGreaterThanOrEqualTo: DateTime(DateTime.now().year, DateTime.now().month, 1))
-            .where('date', isLessThan: DateTime(DateTime.now().year, DateTime.now().month + 1, 1))
+            .where('date', isGreaterThanOrEqualTo: currentBillingPeriod.start)
+            .where('date', isLessThan: currentBillingPeriod.end)
             .get();
         return querySnapshot.docs
             .map((doc) => Expense.fromEntity(ExpenseEntity.fromDocument(doc.data())))

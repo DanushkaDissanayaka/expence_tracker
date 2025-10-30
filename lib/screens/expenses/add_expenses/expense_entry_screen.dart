@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'segmented.dart';
 
-enum FocusField { none, amount, category, account, person }
+enum FocusField { none, amount, category, account, person, date }
 
 class ExpenseEntryScreen extends StatefulWidget {
   final Expense? existingExpense; // Add optional existing expense parameter
@@ -359,7 +359,7 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                       label: "Person",
                       value: person.name,
                       icon: person.icon.icon,
-                      selected: false,
+                      selected: focus == FocusField.person,
                       onTap: () => _setFocus(FocusField.person),
                     ),
 
@@ -370,9 +370,9 @@ class _ExpenseEntryScreenState extends State<ExpenseEntryScreen> {
                       label: "Date",
                       value: formattedDate,
                       icon: Icons.calendar_today_outlined,
-                      selected: false,
+                      selected: focus == FocusField.date,
                       onTap: () {
-                        _setFocus(FocusField.none); // Hide number pad first
+                        _setFocus(FocusField.date); // Hide number pad first
                         _pickDate();
                       },
                     ),

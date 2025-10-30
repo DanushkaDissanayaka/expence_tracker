@@ -1,6 +1,4 @@
 
-import 'dart:developer';
-
 import 'package:expense_tracker/blocs/balance/get_balance_summary_bloc/get_balance_summary_bloc.dart';
 import 'package:expense_tracker/blocs/expense/create_expense_bloc/create_expense_bloc.dart';
 import 'package:expense_tracker/blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
@@ -26,13 +24,32 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  
+  final List<Map<String, dynamic>> _balancePages = [
+    {'title': 'Overall', 'personId': null},
+  ];
+
   @override
   void initState() {
     super.initState();
+
+    // add persons dynamically
+    for (var person in persons) {
+      _balancePages.add({'title': person.name, 'personId': person.personId});
+    }
+    _pageController = PageController();
     // Fetch expenses when screen loads
     context.read<GetTotalExpensesBloc>().add(GetTotalExpenses());
     // Fetch balance summary when screen loads
     context.read<GetBalanceSummaryBloc>().add(const GetBalanceSummary());
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -95,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Shawn/Sam',
+                  'S&S',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -145,67 +162,151 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBalanceCard() {
+    return Column(
+      children: [
+        // Page indicator
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            _balancePages.length,
+            (index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _currentPage == index ? 20 : 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _currentPage == index
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // PageView for balance cards
+        SizedBox(
+          height: 190,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (int page) {
+              setState(() {
+                _currentPage = page;
+              });
+              // Fetch balance summary for the current page
+              final personId = _balancePages[page]['personId'];
+              context.read<GetBalanceSummaryBloc>().add(GetBalanceSummary(personId: personId));
+            },
+            itemCount: _balancePages.length,
+            itemBuilder: (context, index) {
+              final pageData = _balancePages[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: _buildBalanceCardContent(pageData['title'], pageData['personId']),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceCardContent(String title, String? personId) {
     return BlocBuilder<GetBalanceSummaryBloc, GetBalanceSummaryState>(
       builder: (context, state) {
         if (state is GetBalanceSummaryLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
         } else if (state is GetBalanceSummarySuccess) {
           return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1), // Flat primary color
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Balance',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFDDD6FE), // Light purple
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    formatToCurrency(state.balanceSummary.availableExpenseBalance),
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildBalanceItem(
-                          'Savings',
-                          formatToCurrency(state.balanceSummary.totalSavings),
-                          saving.icon.icon,
-                          saving.color, // Green
-                        ),
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$title Balance',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFDDD6FE),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildBalanceItem(
-                          'Current',
-                          formatToCurrency(state.balanceSummary.currentExpenses),
-                          CupertinoIcons.arrow_up_right,
-                          expenses.color, // Red
-                        ),
-                      ),
-                    ],
+                    )
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  formatToCurrency(state.balanceSummary.availableExpenseBalance),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
                   ),
-                ],
-              ),
-            );
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildBalanceItem(
+                        'Savings',
+                        formatToCurrency(state.balanceSummary.totalSavings),
+                        saving.icon.icon,
+                        saving.color,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildBalanceItem(
+                        'Current',
+                        formatToCurrency(state.balanceSummary.currentExpenses),
+                        CupertinoIcons.arrow_up_right,
+                        expenses.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
         } else if (state is GetBalanceSummaryFailure) {
-          return Center(child: Text('Error: ${state.error}'));
+          return Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                'Error: ${state.error}',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          );
         }
-        return Container();
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6366F1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+        );
       },
     );
   }
@@ -330,7 +431,7 @@ class _MainScreenState extends State<MainScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),

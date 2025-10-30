@@ -1,10 +1,7 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses_repository/expense_repository.dart';
-import 'package:expenses_repository/src/abstract/balance_repo.dart';
 import 'package:expenses_repository/src/entities/entities.dart';
-import 'package:expenses_repository/src/models/balance_summary.dart';
+import 'package:expenses_repository/src/helpers/datetime_helper.dart';
 
 class FirebaseBalanceRepo implements BalanceRepository {
   final budgetPlanCollection = FirebaseFirestore.instance.collection('budget_plan');
@@ -14,8 +11,8 @@ class FirebaseBalanceRepo implements BalanceRepository {
   Future<BalanceSummary> getBalanceSummary(String? personId) async {
     // get budget plan for current month
     var budgetPlanSnapshot = await budgetPlanCollection
-        .where('month', isEqualTo: DateTime.now().month)
-        .where('year', isEqualTo: DateTime.now().year)
+        .where('month', isEqualTo: DatetimeHelper.getCurrentBillingMonth())
+        .where('year', isEqualTo: DatetimeHelper.getCurrentBillingYear())
         .get();
     
     if (budgetPlanSnapshot.docs.isEmpty) {
@@ -31,10 +28,12 @@ class FirebaseBalanceRepo implements BalanceRepository {
     final budgetPlan = BudgetPlan.fromEntity(BudgetPlanEntity.fromDocument(budgetPlanSnapshot.docs.first.data()));
 
     // get total expenses for current month
+    var currentBillingPeriod = DatetimeHelper.getCurrentBillingPeriod();
+
     var expenseQuery = expenseCollection
-        .where('date', isGreaterThanOrEqualTo: DateTime(DateTime.now().year, DateTime.now().month, 1))
-        .where('date', isLessThan: DateTime(DateTime.now().year, DateTime.now().month + 1, 1));
-    
+        .where('date', isGreaterThanOrEqualTo: currentBillingPeriod.start)
+        .where('date', isLessThan: currentBillingPeriod.end);
+
     if (personId != null) {
       expenseQuery = expenseQuery.where('personId', isEqualTo: personId);
     }
