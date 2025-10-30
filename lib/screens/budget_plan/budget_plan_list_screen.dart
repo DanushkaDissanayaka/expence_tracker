@@ -176,6 +176,47 @@ class BudgetPlanListScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: () {
+                                  final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
+                                  final getBudgetPlansBloc = BlocProvider.of<GetBudgetPlansBloc>(context);
+                                  
+                                  // Create a copy of the plan without the ID (for cloning)
+                                  final clonedPlan = BudgetPlan(
+                                    budgetPlanId: '', // Empty ID to create new plan
+                                    month: plan.month,
+                                    year: plan.year,
+                                    budgetPlan: plan.budgetPlan,
+                                  );
+                                  
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BlocProvider.value(
+                                        value: createBudgetPlanBloc,
+                                        child: BudgetPlanScreen(initialPlan: clonedPlan),
+                                      ),
+                                    ),
+                                  ).then((_) {
+                                    // Reload budget plans after cloning
+                                    getBudgetPlansBloc.add(const GetBudgetPlans());
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary.withValues(alpha: .1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.copy,
+                                    size: 16,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),

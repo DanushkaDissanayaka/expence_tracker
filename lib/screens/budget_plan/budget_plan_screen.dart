@@ -38,8 +38,11 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialPlan != null) {
+    if (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false) {
       selectedMonth = DateTime(widget.initialPlan!.year, widget.initialPlan!.month);
+    }
+
+    if (widget.initialPlan != null) {
       budgetList = List<Budget>.from(widget.initialPlan!.budgetPlan);
     }
   }
@@ -165,7 +168,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: GestureDetector(
-                            onTap: widget.initialPlan != null
+                            onTap: (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false)
                                 ? null
                                 : () async {
                                     final now = DateTime.now();
@@ -203,7 +206,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: widget.initialPlan != null ? const Color(0xFFF1F5F9) : Colors.white,
+                                color: (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false) ? const Color(0xFFF1F5F9) : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
@@ -215,13 +218,13 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: widget.initialPlan != null ? const Color(0xFF94A3B8) : const Color(0xFF2D3748),
+                                      color: (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false) ? const Color(0xFF94A3B8) : const Color(0xFF2D3748),
                                     ),
                                   ),
                                   Icon(
                                     Icons.keyboard_arrow_down,
                                     size: 20,
-                                    color: widget.initialPlan != null ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    color: (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false) ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                   ),
                                 ],
                               ),

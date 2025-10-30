@@ -19,6 +19,7 @@ class FirebaseBudgetRepository implements BudgetRepository {
             .where('year', isEqualTo: budgetPlan.year)
             .get();
         if (existingPlan.docs.isNotEmpty) {
+          // budgetPlan.budgetPlanId = existingPlan.docs.first.id;
           throw Exception('Budget plan for this month already exists.');
         } else {
           // generate a new id
