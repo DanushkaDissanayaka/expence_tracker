@@ -9,4 +9,6 @@ abstract class ExpenseRepository {
     Future<void> deleteExpense(String expenseId);
     Future<List<TotalExpense>> getExpensesGroupedByCategory();
     Future<List<Expense>> getExpensesByCategory(String categoryId);
+    Future<Map<int, double>> getDailyExpensesForCurrentBillingPeriod();
+    Future<Map<int, double>> getCumulativeExpensesForCurrentBillingPeriod();
 }

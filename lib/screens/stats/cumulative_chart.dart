@@ -3,21 +3,21 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class MyChart extends StatefulWidget {
+class CumulativeChart extends StatefulWidget {
   final Map<int, double> dailyExpenses;
   final DateTime billingPeriodStart;
   
-  const MyChart({
+  const CumulativeChart({
     super.key, 
     required this.dailyExpenses,
     required this.billingPeriodStart,
   });
 
   @override
-  State<MyChart> createState() => _MyChartState();
+  State<CumulativeChart> createState() => _CumulativeChartState();
 }
 
-class _MyChartState extends State<MyChart> {
+class _CumulativeChartState extends State<CumulativeChart> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -26,14 +26,24 @@ class _MyChartState extends State<MyChart> {
     );
   }
 
-  List<FlSpot> getSpots() {
+  List<FlSpot> getCumulativeSpots() {
     if (widget.dailyExpenses.isEmpty) {
       return [];
     }
 
-    return widget.dailyExpenses.entries
-        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.clamp(0.0, double.infinity)))
-        .toList();
+    double cumulativeSum = 0.0;
+    final spots = <FlSpot>[];
+    
+    // Sort entries by day to ensure proper cumulative calculation
+    final sortedEntries = widget.dailyExpenses.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    
+    for (var entry in sortedEntries) {
+      cumulativeSum += entry.value.clamp(0.0, double.infinity);
+      spots.add(FlSpot(entry.key.toDouble(), cumulativeSum));
+    }
+    
+    return spots;
   }
 
   LineChartData mainLineData() {
@@ -41,10 +51,9 @@ class _MyChartState extends State<MyChart> {
       return LineChartData();
     }
 
-    final maxExpense = widget.dailyExpenses.values
-        .map((v) => v.clamp(0.0, double.infinity))
-        .reduce((a, b) => a > b ? a : b);
-    final maxY = maxExpense > 0 ? (maxExpense * 1.25).ceilToDouble() : 100.0; // Increased from 1.2 to 1.25 for more top space
+    final spots = getCumulativeSpots();
+    final maxCumulative = spots.isNotEmpty ? spots.last.y : 0.0;
+    final maxY = maxCumulative > 0 ? (maxCumulative * 1.2).ceilToDouble() : 100.0; // Increased from 1.15 to 1.2 for more top space
     final minY = 0.0;
     
     // Get min and max X values from the data
@@ -119,9 +128,9 @@ class _MyChartState extends State<MyChart> {
       ),
       lineBarsData: [
         LineChartBarData(
-          spots: getSpots(),
+          spots: spots,
           isCurved: false, // Straight lines, no smoothing
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.tertiary,
           barWidth: 3,
           isStrokeCapRound: true,
           dotData: FlDotData(
@@ -129,7 +138,7 @@ class _MyChartState extends State<MyChart> {
             getDotPainter: (spot, percent, barData, index) {
               return FlDotCirclePainter(
                 radius: 3,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.tertiary,
                 strokeWidth: 2,
                 strokeColor: Colors.white,
               );
@@ -139,8 +148,8 @@ class _MyChartState extends State<MyChart> {
             show: true,
             gradient: LinearGradient(
               colors: [
-                Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                Theme.of(context).colorScheme.tertiary.withOpacity(0.3),
+                Theme.of(context).colorScheme.tertiary.withOpacity(0.05),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -151,7 +160,7 @@ class _MyChartState extends State<MyChart> {
       lineTouchData: LineTouchData(
         enabled: true,
         touchTooltipData: LineTouchTooltipData(
-          getTooltipColor: (touchedSpot) => Theme.of(context).colorScheme.primary,
+          getTooltipColor: (touchedSpot) => Theme.of(context).colorScheme.tertiary,
           getTooltipItems: (List<LineBarSpot> touchedSpots) {
             return touchedSpots.map((spot) {
               final dayNumber = spot.x.toInt();
@@ -161,7 +170,7 @@ class _MyChartState extends State<MyChart> {
               final formattedDate = '${monthNames[actualDate.month - 1]} ${actualDate.day}';
               
               return LineTooltipItem(
-                '$formattedDate\nLKR ${spot.y.toStringAsFixed(2)}',
+                '$formattedDate\nTotal: LKR ${spot.y.toStringAsFixed(2)}',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -176,7 +185,7 @@ class _MyChartState extends State<MyChart> {
           return spotIndexes.map((spotIndex) {
             return TouchedSpotIndicatorData(
               FlLine(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5),
                 strokeWidth: 2,
                 dashArray: [5, 5],
               ),
@@ -185,7 +194,7 @@ class _MyChartState extends State<MyChart> {
                 getDotPainter: (spot, percent, barData, index) {
                   return FlDotCirclePainter(
                     radius: 5,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.tertiary,
                     strokeWidth: 2,
                     strokeColor: Colors.white,
                   );
@@ -227,7 +236,7 @@ class _MyChartState extends State<MyChart> {
     
     String text;
     
-    // Always show 0 value at the bottom
+    // Always show 0 at the bottom
     if (value == 0) {
       text = '0';
     } else if (value >= 1000) {

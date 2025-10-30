@@ -51,4 +51,16 @@ class MongoExpenseRepo implements ExpenseRepository {
     // TODO: implement getExpensesByCategory
     throw UnimplementedError();
   }
+
+  @override
+  Future<Map<int, double>> getDailyExpensesForCurrentBillingPeriod() {
+    // TODO: implement getDailyExpensesForCurrentBillingPeriod
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<int, double>> getCumulativeExpensesForCurrentBillingPeriod() {
+    // TODO: implement getCumulativeExpensesForCurrentBillingPeriod
+    throw UnimplementedError();
+  }
 }
