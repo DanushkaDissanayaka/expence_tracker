@@ -54,22 +54,26 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        color: const Color(0xFFF8FAFC), // Light background
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: _buildHeader(context),// Header Section
+      ),
+      body: Container(
+        color: Theme.of(context).colorScheme.surface, // Light background
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
           child: Column(
             children: [
-              // Header Section
-              _buildHeader(context),
-              const SizedBox(height: 24),
               // Balance Card
               _buildBalanceCard(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               // Transactions Header
               _buildTransactionsHeader(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               // Transactions List
               _buildTransactionsList(),
             ],
@@ -184,31 +188,48 @@ class _MainScreenState extends State<MainScreen> {
         ),
         const SizedBox(height: 8),
         
-        // PageView for balance cards
-        SizedBox(
-          height: 190,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (int page) {
-              setState(() {
-                _currentPage = page;
-              });
-              // Fetch balance summary for the current page
-              final personId = _balancePages[page]['personId'];
-              context.read<GetBalanceSummaryBloc>().add(GetBalanceSummary(personId: personId));
-            },
-            itemCount: _balancePages.length,
-            itemBuilder: (context, index) {
-              final pageData = _balancePages[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: _buildBalanceCardContent(pageData['title'], pageData['personId']),
-              );
-            },
+        // PageView for balance cards - dynamic height
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: SizedBox(
+            height: _calculateCardHeight(),
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (int page) {
+                setState(() {
+                  _currentPage = page;
+                });
+                // Fetch balance summary for the current page
+                final personId = _balancePages[page]['personId'];
+                context.read<GetBalanceSummaryBloc>().add(GetBalanceSummary(personId: personId));
+              },
+              itemCount: _balancePages.length,
+              itemBuilder: (context, index) {
+                final pageData = _balancePages[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: _buildBalanceCardContent(pageData['title'], pageData['personId']),
+                );
+              },
+            ),
           ),
         ),
       ],
     );
+  }
+
+  double _calculateCardHeight() {
+    final state = context.watch<GetBalanceSummaryBloc>().state;
+    
+    if (state is GetBalanceSummarySuccess) {
+      final hasWarning = state.balanceSummary.unplannedExpenses > 0 || 
+                        state.balanceSummary.overExpenses > 0;
+      // Base height + warning container height if present
+      return hasWarning ? 260 : 210;
+    }
+    
+    return 210; // Default height
   }
 
   Widget _buildBalanceCardContent(String title, String? personId) {
@@ -279,6 +300,8 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                _buildBalanceAnalysisText(state.balanceSummary),
               ],
             ),
           );
@@ -367,6 +390,50 @@ class _MainScreenState extends State<MainScreen> {
           ),
         )
       ],
+    );
+  }
+                        
+  Widget _buildBalanceAnalysisText(BalanceSummary balanceSummary) {
+    if (balanceSummary.unplannedExpenses > 0) {
+      final count = balanceSummary.unplannedExpenseCategoriesCount;
+      final message =
+          "You have $count unplanned ${count == 1 ? 'expense' : 'expenses'} \n totaling ${formatToCurrency(balanceSummary.unplannedExpenses)}";
+      return buildWarningContainer(message);
+    } else if (balanceSummary.overExpenses > 0) {
+      final count = balanceSummary.overExpenseCategoriesCount;
+      final message =
+          "You have overspent in $count ${count == 1 ? 'category' : 'categories'} \n totaling ${formatToCurrency(balanceSummary.overExpenses)}";
+      return buildWarningContainer(message);
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget buildWarningContainer(String message) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha:0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.warning, color: expenses.color, size: 24),
+              const SizedBox(width: 2),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -458,7 +525,7 @@ class _MainScreenState extends State<MainScreen> {
           border: Border.all(color: const Color(0xFFE5E7EB)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha:0.02),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
