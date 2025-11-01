@@ -9,18 +9,37 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   final categoryCollection =
       FirebaseFirestore.instance.collection('categories');
   final expenseCollection = FirebaseFirestore.instance.collection('expenses');
+  final budgetPlanCollection = FirebaseFirestore.instance.collection('budget_plan');
+
 
   @override
 
   /// Returns a list of TotalExpense, each containing a category, its expenses, and the total amount for that category.
-  Future<List<TotalExpense>> getExpensesGroupedByCategory() async {
+  Future<List<TotalExpenseByCategory>> getExpensesGroupedByCategory() async {
     final currentBillingPeriod = DatetimeHelper.getCurrentBillingPeriod();
+
     try {
+
+    var budgetPlanSnapshot = await budgetPlanCollection
+        .where('month', isEqualTo: DatetimeHelper.getCurrentBillingMonth())
+        .where('year', isEqualTo: DatetimeHelper.getCurrentBillingYear())
+        .get();
+
       final querySnapshot = await expenseCollection
           .where('date', isGreaterThanOrEqualTo: currentBillingPeriod.start)
           .where('date', isLessThan: currentBillingPeriod.end)
           .get();
 
+      final budgetPlan = BudgetPlan.fromEntity(BudgetPlanEntity.fromDocument(budgetPlanSnapshot.docs.first.data()));
+
+      // Group budget expenses by categoryId
+      final Map<String, List<Budget>> groupedBudget = {};
+      for (var budget in budgetPlan.budgetPlan) {
+        if(budget.budgetType.budgetTypeId != expenses.budgetTypeId) continue;
+        final categoryId =
+            budget.subCategory.categoryId + budget.budgetType.budgetTypeId;
+        groupedBudget.putIfAbsent(categoryId, () => []).add(budget);
+      }
 
       final expensesAndIncome = querySnapshot.docs
           .map((doc) =>
@@ -40,40 +59,32 @@ class FirebaseExpenseRepo implements ExpenseRepository {
         grouped.putIfAbsent(categoryId, () => []).add(exp);
       }
 
-      // Build result with total amount per category
-      final List<TotalExpense> result = [];
-      for (var entry in grouped.entries) {
-        final category = entry.value.first.category;
+      // Build result with budgeted amount and spend amount per category
+      final List<TotalExpenseByCategory> result = [];
 
-        final lastTransactionDate = entry.value.isNotEmpty
-            ? entry.value
+      for (var budget in groupedBudget.entries) {
+        final totalBudgetAmount = budget.value.fold<double>(0, (sum, e) => sum + e.amount);
+        final expenses = grouped[budget.key] ?? [];
+        final totalSpentAmount = expenses.fold<double>(0, (sum, e) => sum + e.amount) ?? 0;
+        final lastTransactionDate = expenses.isNotEmpty
+            ? expenses
                 .map((e) => e.date)
                 .reduce((a, b) => a.isAfter(b) ? a : b)
-            : DateTime.now(); // Default to now if no expenses
-
-        final totalAmount =
-            entry.value.fold<int>(0, (sum, e) => sum + e.amount);
-
-        result.add(TotalExpense(
+            : null; 
+        final category = budget.value.first.subCategory;
+        
+        result.add(TotalExpenseByCategory(
           category: category,
-          expenses: entry.value,
-          totalAmount: totalAmount,
+          expenses: expenses,
+          totalAmount: totalSpentAmount.toInt(),
+          totalAllocatedAmount: totalBudgetAmount.toInt(),
           lastTransactionDate: lastTransactionDate,
-          budgetType: entry.value.first.budgetType,
+          budgetType: budget.value.first.budgetType,
         ));
+
       }
 
-      for (var entry in incomeList) {
-        result.add(TotalExpense(
-          category: entry.category,
-          expenses: [entry],
-          totalAmount: entry.amount,
-          lastTransactionDate: entry.date,
-          budgetType: entry.budgetType,
-        ));
-      }
-
-      result.sort((a, b) => b.lastTransactionDate.compareTo(a.lastTransactionDate));
+      result.sort((a, b) => b.lastTransactionDate?.compareTo(a.lastTransactionDate ?? DateTime.now()) ?? 0);
 
       return result;
     } catch (e) {
@@ -81,6 +92,77 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       rethrow;
     }
   }
+
+  // /// Returns a list of TotalExpense, each containing a category, its expenses, and the total amount for that category.
+  // Future<List<TotalExpense>> getExpensesGroupedByCategory() async {
+  //   final currentBillingPeriod = DatetimeHelper.getCurrentBillingPeriod();
+  //   try {
+  //     final querySnapshot = await expenseCollection
+  //         .where('date', isGreaterThanOrEqualTo: currentBillingPeriod.start)
+  //         .where('date', isLessThan: currentBillingPeriod.end)
+  //         .get();
+
+
+  //     final expensesAndIncome = querySnapshot.docs
+  //         .map((doc) =>
+  //             Expense.fromEntity(ExpenseEntity.fromDocument(doc.data())))
+  //         .toList();
+  //     final expensesList = expensesAndIncome
+  //         .where((e) => e.budgetType.budgetTypeId == expenses.budgetTypeId)
+  //         .toList();
+  //     final incomeList = expensesAndIncome
+  //         .where((e) => e.budgetType.budgetTypeId == income.budgetTypeId)
+  //         .toList();
+  //     // Group expenses by categoryId
+  //     final Map<String, List<Expense>> grouped = {};
+  //     for (var exp in expensesList) {
+  //       final categoryId =
+  //           exp.category.categoryId + exp.budgetType.budgetTypeId;
+  //       grouped.putIfAbsent(categoryId, () => []).add(exp);
+  //     }
+
+  //     // Build result with total amount per category
+  //     final List<TotalExpense> result = [];
+  //     for (var entry in grouped.entries) {
+  //       final category = entry.value.first.category;
+
+  //       final lastTransactionDate = entry.value.isNotEmpty
+  //           ? entry.value
+  //               .map((e) => e.date)
+  //               .reduce((a, b) => a.isAfter(b) ? a : b)
+  //           : DateTime.now(); // Default to now if no expenses
+
+  //       final totalAmount =
+  //           entry.value.fold<int>(0, (sum, e) => sum + e.amount);
+
+  //       result.add(TotalExpense(
+  //         category: category,
+  //         expenses: entry.value,
+  //         totalAmount: totalAmount,
+  //         lastTransactionDate: lastTransactionDate,
+  //         budgetType: entry.value.first.budgetType,
+  //       ));
+  //     }
+
+  //     for (var entry in incomeList) {
+  //       result.add(TotalExpense(
+  //         category: entry.category,
+  //         expenses: [entry],
+  //         totalAmount: entry.amount,
+  //         lastTransactionDate: entry.date,
+  //         budgetType: entry.budgetType,
+  //       ));
+  //     }
+
+  //     result.sort((a, b) => b.lastTransactionDate.compareTo(a.lastTransactionDate));
+
+  //     return result;
+  //   } catch (e) {
+  //     log(e.toString());
+  //     rethrow;
+  //   }
+  // }
+  
   
   /// Returns a list of expenses for a given categoryId.
   @override

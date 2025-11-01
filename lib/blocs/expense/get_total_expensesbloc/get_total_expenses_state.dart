@@ -19,7 +19,7 @@ final class GetTotalExpensesFailure extends GetTotalExpensesState {
 }
 
 final class GetTotalExpensesSuccess extends GetTotalExpensesState {
-  final List<TotalExpense> expenses;
+  final List<TotalExpenseByCategory> expenses;
 
   const GetTotalExpensesSuccess(this.expenses);
 

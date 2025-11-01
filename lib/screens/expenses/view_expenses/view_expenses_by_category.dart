@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ViewExpensesByCategory extends StatefulWidget {
-  final TotalExpense totalExpense;
+  final TotalExpenseByCategory totalExpense;
 
   const ViewExpensesByCategory({super.key, required this.totalExpense});
 

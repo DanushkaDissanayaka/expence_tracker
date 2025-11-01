@@ -320,7 +320,7 @@ class _MainScreenState extends State<MainScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -402,7 +402,27 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildTransactionItem(TotalExpense expense) {
+  Widget _buildTransactionItem(TotalExpenseByCategory expense) {
+    // Calculate remaining amount
+    final double remaining = (expense.totalAllocatedAmount - expense.totalAmount).toDouble();
+    final double allocated = expense.totalAllocatedAmount.toDouble();
+    final double spent = expense.totalAmount.toDouble();
+    
+    // Determine color based on spending ratio
+    Color getSpendColor() {
+      if (allocated == 0 && spent > 0) return Color(0xFFEF4444); // Red - danger zone
+      if (allocated == 0) return Colors.grey;
+      final double spendRatio = spent / allocated;
+      
+      if (spendRatio <= 0.5) {
+        return const Color(0xFF10B981); // Green - safe zone
+      } else if (spendRatio <= 1.0) {
+        return const Color(0xFFF59E0B); // Yellow/Amber - warning zone
+      } else {
+        return const Color(0xFFEF4444); // Red - danger zone
+      }
+    }
+    
     return GestureDetector(
       onTap: () {
         final getExpensesByCategoryBloc = BlocProvider.of<GetExpensesByCategoryBloc>(context);
@@ -431,65 +451,155 @@ class _MainScreenState extends State<MainScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                expense.category.isNotEmpty()
-                    ? expense.category.icon.icon
-                    : income.icon.icon,
-                color: expense.budgetType.color,
-                size: 20,
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Column(
+          children: [
+            // Top row with icon, category name, and last transaction date
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: (expense.budgetType.budgetTypeId == income.budgetTypeId 
+                      ? expense.budgetType.color : getSpendColor()).withValues(alpha: .1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    expense.category.isNotEmpty()
+                        ? expense.category.icon.icon
+                        : income.icon.icon,
+                    color: expense.budgetType.budgetTypeId == income.budgetTypeId 
+                      ? expense.budgetType.color : getSpendColor(),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        expense.category.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        expense.lastTransactionDate?.toLocal().toString().split(' ')[0] ?? 'No date',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Budget details row
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    expense.category.name.isEmpty
-                        ? (expense.expenses.first.note.isEmpty
-                              ? income.name
-                              : expense.expenses.first.note)
-                        : expense.category.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
+                  // Allocated amount
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Allocated',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formatToCurrency(allocated),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF6366F1),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    expense.lastTransactionDate.toLocal().toString().split(
-                      ' ',
-                    )[0],
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
+                  // Spent amount
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Spent',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formatToCurrency(spent),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: getSpendColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Remaining amount
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          remaining == 0 ? 'Budget over' : remaining < 0 ? 'Overspent' : 'Remaining',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formatToCurrency(remaining),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: getSpendColor(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-            Text(
-              'Rs. ${expense.totalAmount}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
               ),
             ),
           ],
@@ -507,7 +617,7 @@ class _MainScreenState extends State<MainScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: .1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
@@ -544,7 +654,7 @@ class _MainScreenState extends State<MainScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFEF4444).withOpacity(0.1),
+              color: const Color(0xFFEF4444).withValues(alpha: .1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(

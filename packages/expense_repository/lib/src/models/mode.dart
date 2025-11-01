@@ -9,3 +9,4 @@ export 'budget.dart';
 export 'budget_plan.dart';
 export 'balance_summary.dart';
 export 'billing_period.dart';
+export 'total_expense_by_category.dart';
