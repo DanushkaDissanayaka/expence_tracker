@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../blocs/budget/get_budget_plans_bloc/get_budget_plans_bloc.dart';
 import '../../blocs/budget/create_budget_plan_bloc/create_budget_plan_bloc.dart';
 import 'budget_plan_screen.dart';
+import 'package:expenses_repository/src/helpers/datetime_helper.dart';
 
 class BudgetPlanListScreen extends StatelessWidget {
   const BudgetPlanListScreen({Key? key}) : super(key: key);
@@ -105,156 +106,197 @@ class BudgetPlanListScreen extends StatelessWidget {
                 final totalSavings = getSavingTotal(plan.budgetPlan, null);
                 final month = DateFormat('MMMM').format(DateTime(0, plan.month));
                 
+                // Check plan status
+                final currentBillingMonth = DatetimeHelper.getCurrentBillingMonth();
+                final currentBillingYear = DatetimeHelper.getCurrentBillingYear();
+                final isCurrentPlan = plan.year == currentBillingYear && plan.month == currentBillingMonth;
+                final isOlderPlan = plan.year < currentBillingYear || 
+                                    (plan.year == currentBillingYear && plan.month < currentBillingMonth);
+                
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isOlderPlan ? const Color(0xFFF8F9FA) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(
+                      color: isCurrentPlan 
+                          ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
+                          : (isOlderPlan ? const Color(0xFFD1D5DB) : const Color(0xFFE2E8F0)),
+                      width: isCurrentPlan ? 2 : 1,
+                    ),
                   ),
-                  child: InkWell(
-                    onTap: () {
-                      final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
-                      final getBudgetPlansBloc = BlocProvider.of<GetBudgetPlansBloc>(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BlocProvider.value(
-                            value: createBudgetPlanBloc,
-                            child: BudgetPlanScreen(initialPlan: plan),
+                  child: Opacity(
+                    opacity: isOlderPlan ? 0.6 : 1.0,
+                    child: InkWell(
+                      onTap: () {
+                        final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
+                        final getBudgetPlansBloc = BlocProvider.of<GetBudgetPlansBloc>(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BlocProvider.value(
+                              value: createBudgetPlanBloc,
+                              child: BudgetPlanScreen(initialPlan: plan),
+                            ),
                           ),
-                        ),
-                      ).then((_) {
-                        // Reload budget plans after editing
-                        getBudgetPlansBloc.add(const GetBudgetPlans());
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Header Row
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: .1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.calendar_month,
-                                  size: 18,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  '$month ${plan.year}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF2D3748),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF0FDF4),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '${plan.budgetPlan.length} items',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF16A34A),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () {
-                                  final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
-                                  final getBudgetPlansBloc = BlocProvider.of<GetBudgetPlansBloc>(context);
-                                  
-                                  // Create a copy of the plan without the ID (for cloning)
-                                  final clonedPlan = BudgetPlan(
-                                    budgetPlanId: '', // Empty ID to create new plan
-                                    month: plan.month,
-                                    year: plan.year,
-                                    budgetPlan: plan.budgetPlan,
-                                  );
-                                  
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => BlocProvider.value(
-                                        value: createBudgetPlanBloc,
-                                        child: BudgetPlanScreen(initialPlan: clonedPlan),
-                                      ),
-                                    ),
-                                  ).then((_) {
-                                    // Reload budget plans after cloning
-                                    getBudgetPlansBloc.add(const GetBudgetPlans());
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(6),
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
+                        ).then((_) {
+                          // Reload budget plans after editing
+                          getBudgetPlansBloc.add(const GetBudgetPlans());
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header Row
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withValues(alpha: .1),
-                                    borderRadius: BorderRadius.circular(6),
+                                    color: isOlderPlan 
+                                        ? const Color(0xFFD1D5DB).withValues(alpha: .3)
+                                        : Theme.of(context).colorScheme.primary.withValues(alpha: .1),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
-                                    Icons.copy,
-                                    size: 16,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    Icons.calendar_month,
+                                    size: 18,
+                                    color: isOlderPlan 
+                                        ? const Color(0xFF6B7280)
+                                        : Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          // Budget Summary Cards
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildBudgetSummaryCard(
-                                  expenses.name,
-                                  formatToCurrency(totalExpenses),
-                                  expenses.icon.icon,
-                                  expenses.color,
-                                  expenses.color.withValues(alpha: .1),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '$month ${plan.year}',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF2D3748),
+                                        ),
+                                      ),
+                                      if (isCurrentPlan) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).colorScheme.primary,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: const Text(
+                                            'Current',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildBudgetSummaryCard(
-                                  income.name,
-                                  formatToCurrency(totalIncome),
-                                  income.icon.icon,
-                                  income.color,
-                                  income.color.withValues(alpha: .1),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0FDF4),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '${plan.budgetPlan.length} items',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF16A34A),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildBudgetSummaryCard(
-                                  saving.name,
-                                  formatToCurrency(totalSavings),
-                                  saving.icon.icon,
-                                  saving.color,
-                                  saving.color.withValues(alpha: .1),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () {
+                                    final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
+                                    final getBudgetPlansBloc = BlocProvider.of<GetBudgetPlansBloc>(context);
+                                    
+                                    // Create a copy of the plan without the ID (for cloning)
+                                    final clonedPlan = BudgetPlan(
+                                      budgetPlanId: '', // Empty ID to create new plan
+                                      month: plan.month,
+                                      year: plan.year,
+                                      budgetPlan: plan.budgetPlan,
+                                    );
+                                    
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BlocProvider.value(
+                                          value: createBudgetPlanBloc,
+                                          child: BudgetPlanScreen(initialPlan: clonedPlan),
+                                        ),
+                                      ),
+                                    ).then((_) {
+                                      // Reload budget plans after cloning
+                                      getBudgetPlansBloc.add(const GetBudgetPlans());
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withValues(alpha: .1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      Icons.copy,
+                                      size: 16,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Budget Summary Cards
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildBudgetSummaryCard(
+                                    expenses.name,
+                                    formatToCurrency(totalExpenses),
+                                    expenses.icon.icon,
+                                    expenses.color,
+                                    expenses.color.withValues(alpha: .1),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildBudgetSummaryCard(
+                                    income.name,
+                                    formatToCurrency(totalIncome),
+                                    income.icon.icon,
+                                    income.color,
+                                    income.color.withValues(alpha: .1),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildBudgetSummaryCard(
+                                    saving.name,
+                                    formatToCurrency(totalSavings),
+                                    saving.icon.icon,
+                                    saving.color,
+                                    saving.color.withValues(alpha: .1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

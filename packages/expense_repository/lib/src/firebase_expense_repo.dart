@@ -84,6 +84,24 @@ class FirebaseExpenseRepo implements ExpenseRepository {
 
       }
 
+      // take the expences not in budget plan as well
+      for (var entry in grouped.entries) {
+        if(groupedBudget.containsKey(entry.key)) continue; // already added from budget plan
+        final category = entry.value.first.category;
+
+        result.add(TotalExpenseByCategory(
+          category: category,
+          expenses: entry.value,
+          totalAmount: entry.value.fold<int>(0, (sum, e) => sum + e.amount),
+          lastTransactionDate: entry.value.isNotEmpty
+              ? entry.value
+              .map((e) => e.date)
+              .reduce((a, b) => a.isAfter(b) ? a : b)
+              : DateTime.now(),
+          budgetType: entry.value.first.budgetType,
+        ));
+      }
+
       result.sort((a, b) => b.lastTransactionDate?.compareTo(a.lastTransactionDate ?? DateTime.now()) ?? 0);
 
       return result;

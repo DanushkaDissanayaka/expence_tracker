@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses_repository/src/abstract/budget_repository.dart';
 import 'package:expenses_repository/src/entities/budget_plan_entity.dart';
+import 'package:expenses_repository/src/helpers/datetime_helper.dart';
 import 'package:expenses_repository/src/models/budget_plan.dart';
 
 class FirebaseBudgetRepository implements BudgetRepository {
@@ -53,10 +54,34 @@ class FirebaseBudgetRepository implements BudgetRepository {
   @override
   Future<List<BudgetPlan>> getBudgetPlans() async {
     try {
-      return await budgetPlanCollection.get().then((value) => value.docs
+      final plans = await budgetPlanCollection.get().then((value) => value.docs
           .map((doc) =>
               BudgetPlan.fromEntity(BudgetPlanEntity.fromDocument(doc.data())))
           .toList());
+      
+      // Sort plans: current billing period first, then by year and month descending
+      final currentBillingMonth = DatetimeHelper.getCurrentBillingMonth();
+      final currentBillingYear = DatetimeHelper.getCurrentBillingYear();
+      
+      plans.sort((a, b) {
+        // Check if a is current billing period
+        final isACurrent = a.year == currentBillingYear && a.month == currentBillingMonth;
+        // Check if b is current billing period
+        final isBCurrent = b.year == currentBillingYear && b.month == currentBillingMonth;
+        
+        // If a is current, it should come first
+        if (isACurrent && !isBCurrent) return -1;
+        // If b is current, it should come first
+        if (!isACurrent && isBCurrent) return 1;
+        
+        // Otherwise, sort by year descending, then month descending
+        if (a.year != b.year) {
+          return b.year.compareTo(a.year);
+        }
+        return b.month.compareTo(a.month);
+      });
+      
+      return plans;
     } catch (e) {
       log(e.toString());
       rethrow;
