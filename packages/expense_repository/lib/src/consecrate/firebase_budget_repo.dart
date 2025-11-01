@@ -59,15 +59,11 @@ class FirebaseBudgetRepository implements BudgetRepository {
               BudgetPlan.fromEntity(BudgetPlanEntity.fromDocument(doc.data())))
           .toList());
       
-      // Sort plans: current billing period first, then by year and month descending
-      final currentBillingMonth = DatetimeHelper.getCurrentBillingMonth();
-      final currentBillingYear = DatetimeHelper.getCurrentBillingYear();
-      
       plans.sort((a, b) {
         // Check if a is current billing period
-        final isACurrent = a.year == currentBillingYear && a.month == currentBillingMonth;
+        final isACurrent =  DatetimeHelper.isMonthInCurrentBillingPeriod(a.year, a.month);
         // Check if b is current billing period
-        final isBCurrent = b.year == currentBillingYear && b.month == currentBillingMonth;
+        final isBCurrent = DatetimeHelper.isMonthInCurrentBillingPeriod(b.year, b.month);
         
         // If a is current, it should come first
         if (isACurrent && !isBCurrent) return -1;

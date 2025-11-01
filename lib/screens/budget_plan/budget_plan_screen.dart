@@ -30,6 +30,8 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
   String editingBudget = '';
   String editingPerson = '';
   bool isLoading = false;
+  bool isOlderPlan = false;
+
 
   String get formattedMonth =>
       "${selectedMonth.year}-${selectedMonth.month.toString().padLeft(2, '0')}";
@@ -39,6 +41,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
     super.initState();
     if (widget.initialPlan?.budgetPlanId.isNotEmpty ?? false) {
       selectedMonth = DateTime(widget.initialPlan!.year, widget.initialPlan!.month);
+      isOlderPlan = DatetimeHelper.isMonthOlderThanCurrentBillingPeriod(widget.initialPlan?.year, widget.initialPlan?.month);
     }
 
     if (widget.initialPlan != null) {
@@ -321,7 +324,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                             ),
                           )
                         : ElevatedButton(
-                            onPressed: budgetList.isNotEmpty
+                            onPressed: budgetList.isNotEmpty && !isOlderPlan
                                 ? () {
                                     BudgetPlan newPlan = BudgetPlan(
                                       budgetPlanId: widget.initialPlan?.budgetPlanId ?? '',

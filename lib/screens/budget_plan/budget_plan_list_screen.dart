@@ -116,17 +116,17 @@ class BudgetPlanListScreen extends StatelessWidget {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: isOlderPlan ? const Color(0xFFF8F9FA) : Colors.white,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isCurrentPlan 
                           ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
-                          : (isOlderPlan ? const Color(0xFFD1D5DB) : const Color(0xFFE2E8F0)),
+                          : const Color(0xFFE2E8F0),
                       width: isCurrentPlan ? 2 : 1,
                     ),
                   ),
                   child: Opacity(
-                    opacity: isOlderPlan ? 0.6 : 1.0,
+                    opacity: 1.0,
                     child: InkWell(
                       onTap: () {
                         final createBudgetPlanBloc = BlocProvider.of<CreateBudgetPlanBloc>(context);
@@ -205,15 +205,15 @@ class BudgetPlanListScreen extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF0FDF4),
+                                    color: isOlderPlan ? const Color(0xFFD1D5DB).withValues(alpha: .3) : const Color(0xFFF0FDF4),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     '${plan.budgetPlan.length} items',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF16A34A),
+                                      color: isOlderPlan ? Colors.grey : Color(0xFF16A34A),
                                     ),
                                   ),
                                 ),
@@ -269,8 +269,8 @@ class BudgetPlanListScreen extends StatelessWidget {
                                     expenses.name,
                                     formatToCurrency(totalExpenses),
                                     expenses.icon.icon,
-                                    expenses.color,
-                                    expenses.color.withValues(alpha: .1),
+                                    isOlderPlan ? Colors.grey : expenses.color,
+                                    isOlderPlan ? Colors.grey.withValues(alpha: .1) : expenses.color.withValues(alpha: .1),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -279,8 +279,8 @@ class BudgetPlanListScreen extends StatelessWidget {
                                     income.name,
                                     formatToCurrency(totalIncome),
                                     income.icon.icon,
-                                    income.color,
-                                    income.color.withValues(alpha: .1),
+                                    isOlderPlan ? Colors.grey : income.color,
+                                    isOlderPlan ? Colors.grey.withValues(alpha: .1) : income.color.withValues(alpha: .1),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -289,8 +289,8 @@ class BudgetPlanListScreen extends StatelessWidget {
                                     saving.name,
                                     formatToCurrency(totalSavings),
                                     saving.icon.icon,
-                                    saving.color,
-                                    saving.color.withValues(alpha: .1),
+                                    isOlderPlan ? Colors.grey : saving.color,
+                                    isOlderPlan ? Colors.grey.withValues(alpha: .1) : saving.color.withValues(alpha: .1),
                                   ),
                                 ),
                               ],

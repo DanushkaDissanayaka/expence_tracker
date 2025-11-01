@@ -71,4 +71,27 @@ class DatetimeHelper {
     }
   }
 
+  static bool isMonthInCurrentBillingPeriod(int year, int month) {
+    final currentBillingMonth = DatetimeHelper.getCurrentBillingMonth();
+    final currentBillingYear = DatetimeHelper.getCurrentBillingYear();
+    return year == currentBillingYear && month == currentBillingMonth;
+  }
+
+  static bool isMonthOlderThanCurrentBillingPeriod(int? year, int? month) {
+    final currentBillingMonth = DatetimeHelper.getCurrentBillingMonth();
+    final currentBillingYear = DatetimeHelper.getCurrentBillingYear();
+
+    if (year == null || month == null) {
+      return false;
+    }
+
+    if (year < currentBillingYear) {
+      return true;
+    } else if (year == currentBillingYear) {
+      return month < currentBillingMonth;
+    } else {
+      return false;
+    }
+  }
+
 }
